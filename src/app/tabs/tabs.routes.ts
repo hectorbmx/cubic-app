@@ -19,13 +19,28 @@ export const routes: Routes = [
       {
         path: 'tab3',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../pages/user-perfil/user-perfil.page').then((m) => m.UserPerfilPage),
       },
       {
         path: '',
         redirectTo: '/tabs/tab1',
         pathMatch: 'full',
       },
+      {
+      path: 'tab1/obras/:clienteId',
+        loadComponent: () =>
+          import('../pages/obras-cliente/obras-cliente.page').then(m => m.ObrasClientePage)
+      },
+       {
+        path: 'tab1/obras/:clienteId/detalle/:obraId',  // <- NUEVA RUTA
+        loadComponent: () =>
+          import('../pages/obras-detalles/obras-detalles.page').then(m => m.ObrasDetallesPage)
+      },
+          {
+        path: 'user-perfil',
+        loadComponent: () => import('../pages/user-perfil/user-perfil.page').then( m => m.UserPerfilPage)
+      },
+
     ],
   },
   {

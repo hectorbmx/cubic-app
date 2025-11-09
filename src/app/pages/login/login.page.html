@@ -1,0 +1,61 @@
+<ion-content [fullscreen]="true" class="login-bg">
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo-section">
+      <div class="logo-card">
+        <img src="assets/logo.png" alt="Cubic33 México" class="logo">
+      </div>
+      <!-- <h1 class="welcome-title">Bienvenido al Portal de Construcción</h1> -->
+      <p class="welcome-subtitle">Gestiona tus proyectos, equipos y recursos desde una sola plataforma moderna e intuitiva.</p>
+    </div>
+
+    <!-- Formulario de Login -->
+    <div class="login-form">
+      <h2 class="form-title">Iniciar Sesión</h2>
+      <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
+
+      <div class="field">
+        <label>Correo Electrónico</label>
+        <ion-item lines="none" class="input-item">
+          <ion-icon name="mail-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="email" 
+            [(ngModel)]="email" 
+            placeholder="tu@email.com">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <ion-item lines="none" class="input-item">
+          <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="password" 
+            [(ngModel)]="password" 
+            placeholder="••••••••">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="row">
+        <ion-checkbox [(ngModel)]="remember">Recuérdame</ion-checkbox>
+        <a class="link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <ion-button expand="block" class="primary-btn" [disabled]="loading" (click)="submit()">
+        {{ loading ? 'Ingresando…' : 'Iniciar Sesión' }}
+      </ion-button>
+
+      <div class="foot">
+        <span>¿Eres nuevo?</span> 
+        <a class="link" (click)="goToRegister()">Regístrate aquí</a>
+      </div>
+
+      <ion-text color="danger" class="error-message" *ngIf="error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        {{ error }}
+      </ion-text>
+    </div>
+  </div>
+</ion-content>

@@ -1,17 +1,115 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 2
-    </ion-title>
+    <ion-title>OBRAS</ion-title>
+    <app-user-menu slot="end"></app-user-menu>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="obras-container">
+    <!-- Header con título y botón -->
+    <div class="obras-header">
+      <h1>Obras</h1>
+      <ion-button class="add-button" fill="solid">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+    <!-- Tabs de estado -->
+    <div class="status-tabs">
+      <button 
+        class="status-tab"
+        [class.active]="statusSelected === 'all'"
+        (click)="setStatus('all')">
+        Todas
+      </button>
+      <button 
+        class="status-tab"
+        [class.active]="statusSelected === 'planning'"
+        (click)="setStatus('planning')">
+        Planning
+      </button>
+      <button 
+        class="status-tab"
+        [class.active]="statusSelected === 'in_progress'"
+        (click)="setStatus('in_progress')">
+        In Progress
+      </button>
+      <button 
+        class="status-tab"
+        [class.active]="statusSelected === 'completed'"
+        (click)="setStatus('completed')">
+        Completed
+      </button>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+      <ion-searchbar 
+        [value]="search"
+        (ionInput)="onSearchChange($event)"
+        placeholder="Buscar obra..."
+        [debounce]="300">
+      </ion-searchbar>
+    </div>
+
+    <!-- Loading spinner -->
+    <div class="loading-container" *ngIf="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando obras...</p>
+    </div>
+
+    <!-- Error message -->
+    <div class="error-container" *ngIf="error && !loading">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>{{ error }}</p>
+      <ion-button size="small" (click)="loadObras()">Reintentar</ion-button>
+    </div>
+
+    <!-- Lista de obras -->
+    <div class="obras-list" *ngIf="!loading && !error">
+      <div 
+        class="obra-card" 
+        *ngFor="let obra of filteredObras"
+        (click)="goObraDetalle(obra.id, obra.clienteId)">
+        
+        <div class="obra-header">
+          <h2 class="obra-nombre">{{ obra.nombre }}</h2>
+          <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+        </div>
+
+        <div class="obra-info">
+          <p class="cliente-nombre">
+            <ion-icon name="person-outline"></ion-icon>
+            {{ obra.clienteNombre }}
+          </p>
+        </div>
+
+        <div class="obra-footer">
+          <span 
+            class="status-badge"
+            [style.background-color]="getStatusColor(obra.estado)">
+            {{ getStatusLabel(obra.estado) }}
+          </span>
+
+          <div class="progress-section">
+            <div class="progress-bar">
+              <div 
+                class="progress-fill"
+                [style.width.%]="obra.progreso"
+                [style.background-color]="getStatusColor(obra.estado)">
+              </div>
+            </div>
+            <span class="progress-text">{{ obra.progreso }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay obras -->
+      <div class="empty-state" *ngIf="filteredObras.length === 0">
+        <ion-icon name="construct-outline"></ion-icon>
+        <p>No se encontraron obras</p>
+      </div>
+    </div>
+  </div>
 </ion-content>

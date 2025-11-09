@@ -1,17 +1,64 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>CLIENTES</ion-title>
+    <app-user-menu slot="end"></app-user-menu>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
-</ion-content>
+  <!-- Después del ion-header collapse -->
+
+<div class="clients-container">
+  <!-- Header con título y botón -->
+  <div class="clients-header">
+    <h1>Clientes</h1>
+    <!-- <ion-button class="add-button" fill="solid">
+      <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+    </ion-button> -->
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-bar">
+    <ion-searchbar 
+      [value]="search"
+      (ionInput)="onSearchChange($event)"
+      placeholder="Buscar cliente..."
+      [debounce]="300">
+    </ion-searchbar>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando clientes...</p>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-container" *ngIf="error && !loading">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ error }}</p>
+    <ion-button size="small" (click)="loadClientes()">Reintentar</ion-button>
+  </div>
+
+  <!-- Lista de clientes -->
+  <div class="clients-list" *ngIf="!loading && !error">
+    <div 
+      class="client-card" 
+      *ngFor="let c of filteredClientes"
+      (click)="goObras(c.id)">
+      <div class="client-info">
+        <h2 class="client-name">{{ c.nombre }}</h2>
+        <p class="client-email">{{ c.email }}</p>
+        <p class="client-projects">Obras Activas: {{ c.obrasActivas }}</p>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="chevron-icon"></ion-icon>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="filteredClientes.length === 0">
+      <ion-icon name="people-outline"></ion-icon>
+      <p>No se encontraron clientes</p>
+    </div>
+  </div>
+</div>

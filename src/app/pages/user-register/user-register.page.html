@@ -1,0 +1,66 @@
+<ion-content [fullscreen]="true" class="register-bg">
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo-section">
+      <div class="logo-card">
+        <img src="assets/logo.png" alt="Cubic33 México" class="logo">
+      </div>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <div class="register-form">
+      <h2 class="form-title">Crear Cuenta</h2>
+      <p class="form-subtitle">Completa tu registro para comenzar</p>
+
+      <div class="field">
+        <label>Correo Electrónico</label>
+        <ion-item lines="none" class="input-item">
+          <ion-icon name="mail-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="email" 
+            [(ngModel)]="email" 
+            placeholder="tu@email.com">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <ion-item lines="none" class="input-item">
+          <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="password" 
+            [(ngModel)]="password" 
+            placeholder="Mínimo 8 caracteres">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <div class="field">
+        <label>Confirmar Contraseña</label>
+        <ion-item lines="none" class="input-item">
+          <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="password" 
+            [(ngModel)]="passwordConfirm" 
+            placeholder="Repite tu contraseña">
+          </ion-input>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" class="primary-btn" [disabled]="loading" (click)="register()">
+        {{ loading ? 'Registrando…' : 'Registrarse' }}
+      </ion-button>
+
+      <div class="foot">
+        <span>¿Ya tienes cuenta?</span> 
+        <a class="link" (click)="goToLogin()">Inicia sesión</a>
+      </div>
+
+      <ion-text color="danger" class="error-message" *ngIf="error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        {{ error }}
+      </ion-text>
+    </div>
+  </div>
+</ion-content>

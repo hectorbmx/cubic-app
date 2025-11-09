@@ -1,0 +1,247 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ obra?.nombre || 'Detalle de Obra' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando detalles...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-container" *ngIf="error && !loading">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ error }}</p>
+    <ion-button size="small" (click)="loadObraDetalle()">Reintentar</ion-button>
+  </div>
+
+  <!-- Contenido -->
+  <div *ngIf="!loading && !error && obra">
+    <!-- Card Principal con Info de la Obra -->
+    <div class="obra-header-card">
+      <div class="obra-title-section">
+        <h1 class="obra-nombre">{{ obra.nombre }}</h1>
+        <p class="obra-codigo">Código: {{ obra.codigo }}</p>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="info-grid">
+        <div class="info-item">
+          <ion-icon name="person-outline" class="info-icon"></ion-icon>
+          <div class="info-content">
+            <span class="info-label">Cliente</span>
+            <span class="info-value">{{ obra.cliente?.nombre || 'Sin cliente' }}</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <ion-icon name="person-circle-outline" class="info-icon" style="color: #9b59b6;"></ion-icon>
+          <div class="info-content">
+            <span class="info-label">Responsable</span>
+            <span class="info-value">{{ obra.responsable?.nombre || 'Sin asignar' }}</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <ion-icon name="calendar-outline" class="info-icon" style="color: #3498db;"></ion-icon>
+          <div class="info-content">
+            <span class="info-label">Inicio</span>
+            <span class="info-value">{{ obra.fechaInicio || 'Sin fecha' }}</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <ion-icon name="checkmark-circle-outline" class="info-icon" [style.color]="getStatusColor(obra.estado)"></ion-icon>
+          <div class="info-content">
+            <span class="info-label">Estado</span>
+            <span class="estado-badge" [style.background-color]="getStatusColor(obra.estado)">
+              {{ getStatusLabel(obra.estado) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Progreso -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Progreso de la Obra</span>
+          <span class="progress-percent">{{ obra.progreso }}%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="obra.progreso" 
+               [style.background]="getStatusColor(obra.estado)"></div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="action-buttons">
+        <ion-button class="action-btn primary" expand="block">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Editar Obra
+        </ion-button>
+        <ion-button class="action-btn secondary" expand="block" fill="outline">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Ver Cliente
+        </ion-button>
+        <ion-button class="action-btn secondary" expand="block" fill="outline">
+          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+          Volver a Obras
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Tabs de Secciones -->
+    <div class="tabs-container">
+      <ion-segment [(ngModel)]="selectedTab" mode="md">
+        <ion-segment-button value="informacion">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <ion-label>Info</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="detalles">
+          <ion-icon name="list-outline"></ion-icon>
+          <ion-label>Detalles</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="camaras">
+          <ion-icon name="videocam-outline"></ion-icon>
+          <ion-label>Cámaras</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="planos">
+          <ion-icon name="document-outline"></ion-icon>
+          <ion-label>Planos</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="contratos">
+          <ion-icon name="clipboard-outline"></ion-icon>
+          <ion-label>Contratos</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="informes">
+          <ion-icon name="bar-chart-outline"></ion-icon>
+          <ion-label>Informes</ion-label>
+        </ion-segment-button>
+        
+        <ion-segment-button value="fotos">
+          <ion-icon name="images-outline"></ion-icon>
+          <ion-label>Fotos</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Contenido de los Tabs -->
+    <div class="tab-content">
+      <!-- Información -->
+      <div *ngIf="selectedTab === 'informacion'" class="content-section">
+        <h2 class="section-title">Información General</h2>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="label">Descripción:</span>
+            <span class="value">{{ obra.descripcion || 'Sin descripción' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Dirección:</span>
+            <span class="value">{{ obra.direccion || 'Sin dirección' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Fecha Fin:</span>
+            <span class="value">{{ obra.fechaFin || 'Sin fecha' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Presupuesto:</span>
+            <span class="value">{{ obra.moneda }} {{ obra.presupuesto || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles/Historial -->
+      <div *ngIf="selectedTab === 'detalles'" class="content-section">
+        <h2 class="section-title">Detalles/Historial</h2>
+        <div class="list-items" *ngIf="obra.detalles && obra.detalles.length > 0">
+          <div class="list-item" *ngFor="let detalle of obra.detalles">
+            <h3>{{ detalle.titulo }}</h3>
+            <p>{{ detalle.descripcion }}</p>
+            <span class="date">{{ detalle.fecha }}</span>
+          </div>
+        </div>
+        <p class="placeholder-text" *ngIf="!obra.detalles || obra.detalles.length === 0">
+          No hay detalles registrados
+        </p>
+      </div>
+
+      <!-- Cámaras -->
+      <div *ngIf="selectedTab === 'camaras'" class="content-section">
+        <h2 class="section-title">Cámaras</h2>
+        <div class="list-items" *ngIf="obra.camaras && obra.camaras.length > 0">
+          <div class="list-item" *ngFor="let camara of obra.camaras">
+            <h3>{{ camara.nombre }}</h3>
+            <p>{{ camara.url }}</p>
+            <span class="badge" [class.active]="camara.activa">
+              {{ camara.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+        </div>
+        <p class="placeholder-text" *ngIf="!obra.camaras || obra.camaras.length === 0">
+          No hay cámaras registradas
+        </p>
+      </div>
+
+      <!-- Planos -->
+<div *ngIf="selectedTab === 'planos'" class="content-section">
+  <h2 class="section-title">Planos</h2>
+  <div class="list-items" *ngIf="obra.planos && obra.planos.length > 0">
+    <div class="list-item clickable" *ngFor="let plano of obra.planos" (click)="openPlano(plano)">
+      <ion-icon name="document-outline"></ion-icon>
+      <div class="item-content">
+        <h3>{{ plano.nombre }}</h3>
+        <span class="date">{{ plano.fecha }}</span>
+      </div>
+      <ion-icon name="open-outline" class="action-icon"></ion-icon>
+    </div>
+  </div>
+  <p class="placeholder-text" *ngIf="!obra.planos || obra.planos.length === 0">
+    No hay planos registrados
+  </p>
+</div>
+
+<!-- Contratos -->
+<div *ngIf="selectedTab === 'contratos'" class="content-section">
+  <h2 class="section-title">Contratos</h2>
+  <div class="list-items" *ngIf="obra.contratos && obra.contratos.length > 0">
+    <div class="list-item clickable" *ngFor="let contrato of obra.contratos" (click)="openContrato(contrato)">
+      <ion-icon name="clipboard-outline"></ion-icon>
+      <div class="item-content">
+        <h3>{{ contrato.nombre }}</h3>
+        <span class="date">{{ contrato.fecha }}</span>
+      </div>
+      <ion-icon name="open-outline" class="action-icon"></ion-icon>
+    </div>
+  </div>
+  <p class="placeholder-text" *ngIf="!obra.contratos || obra.contratos.length === 0">
+    No hay contratos registrados
+  </p>
+</div>
+
+<!-- Fotos -->
+<div *ngIf="selectedTab === 'fotos'" class="content-section">
+  <h2 class="section-title">Fotos</h2>
+  <div class="photos-grid" *ngIf="obra.fotos && obra.fotos.length > 0">
+    <div class="photo-item" *ngFor="let foto of obra.fotos" (click)="openFoto(foto)">
+      <img [src]="foto.thumbnail || foto.url" [alt]="foto.descripcion">
+      <p>{{ foto.descripcion }}</p>
+    </div>
+  </div>
+  <p class="placeholder-text" *ngIf="!obra.fotos || obra.fotos.length === 0">
+    No hay fotos registradas
+  </p>
+</div>
+    </div>
+  </div>
+</ion-content>

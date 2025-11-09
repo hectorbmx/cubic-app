@@ -1,1 +1,17 @@
 
+ion-tab-bar {
+  --background: #0D1E35;
+  --color: #ffffff;          /* iconos inactivos blancos */
+  --color-selected: #F5B301; /* iconos activos amarillo Cubic */
+  border-top: none;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+// ion-tab-bar {
+//   --background: #ffffff;
+//   --color: #0D1E35;          /* iconos inactivos azul oscuro */
+//   --color-selected: #F5B301; /* iconos activos amarillo Cubic */
+//   border-top: 1px solid rgba(0, 0, 0, 0.08);
+//   box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.05);
+// }
+
