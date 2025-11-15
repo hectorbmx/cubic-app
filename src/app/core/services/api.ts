@@ -22,6 +22,8 @@ export class ApiService {
 
   // Auth
   login(email: string, password: string): Observable<any> {
+      const url = `${environment.apiUrl}login`;
+  console.log('[API] POST ->', url, { email });
     return this.http.post(`${this.apiUrl}/login`, { email, password }, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -81,4 +83,11 @@ register(email: string, password: string, passwordConfirmation: string): Observa
       headers: this.getHeaders()
     });
   }
+getObrasByCliente(clienteId: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/obras/cliente/${clienteId}`, {
+    headers: this.getHeaders()
+  });
+}
+
+
 }

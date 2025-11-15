@@ -83,6 +83,8 @@ import { Injectable, signal } from '@angular/core';
 // import { ApiService } from './api.service';
 import { ApiService } from './api';
 import { firstValueFrom } from 'rxjs';
+import { Obra } from 'src/app/models/obra';
+
 
 export type User = {
   id: number;
@@ -91,6 +93,13 @@ export type User = {
   photoURL?: string;
   roles?: string[];
   permissions?: string[];
+  clientes?: Array<{ id: number; name: string; email: string }>; // ← NUEVO
+
+  // cliente activo del usuario
+  client_id?: number | null;
+  clientId?: number | null;
+  client_name?: string | null;
+  clientName?: string | null;
 };
 
 @Injectable({
@@ -98,37 +107,68 @@ export type User = {
 })
 export class AuthService {
   user = signal<User | null>(null);
-
+  obrasCliente = signal<Obra[] | null>(null);
+ 
   constructor(private apiService: ApiService) {
     this.loadUser();
   }
 
-  async login(email: string, password: string): Promise<void> {
-    try {
-      const response = await firstValueFrom(
-        this.apiService.login(email, password)
-      );
+async login(email: string, password: string): Promise<void> {
+  try {
+    const response = await firstValueFrom(
+      this.apiService.login(email, password)
+    );
 
-      // Guardar token
-      localStorage.setItem('auth_token', response.token);
-      
-      // Guardar usuario
-      this.user.set({
+    // Guardar token
+    localStorage.setItem('auth_token', response.token);
+    
+    // Guardar usuario con su lista de clientes
+    this.user.set({
+      id: response.user.id,
+      name: response.user.name,
+      email: response.user.email,
+      roles: response.user.roles,
+      permissions: response.user.permissions,
+      clientes: response.user.clientes || [],
+      client_id: response.user.client_id,
+      clientId: response.user.clientId,
+      client_name: response.user.client_name,
+      clientName: response.user.clientName,
+    });
+    
+    // Si tiene clientes, establecer el primero como activo
+    // const firstClient = response.user.clientes?.[0];
+    const firstClient: { id: number; name: string } | undefined = response.user.clientes?.[0];
+
+    if (firstClient) {
+      // actualiza el usuario guardado para reflejar el cliente activo
+      const current = this.user() ?? {
         id: response.user.id,
         name: response.user.name,
         email: response.user.email,
         roles: response.user.roles,
-        permissions: response.user.permissions
+        permissions: response.user.permissions,
+        clientes: response.user.clientes || [],
+      };
+      this.user.set({
+        ...current,
+        client_id: firstClient.id,
+        clientId: firstClient.id,
+        client_name: firstClient.name,
+        clientName: firstClient.name,
       });
-
-      // Guardar en localStorage para persistencia
-      localStorage.setItem('user', JSON.stringify(this.user()));
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.error?.message || 'Error al iniciar sesión');
     }
+    
+    await this.preloadClientObras();
+    
+    // Guardar en localStorage
+    localStorage.setItem('user', JSON.stringify(this.user()));
+    
+  } catch (error: any) {
+    console.error('Login error:', error);
+    throw new Error(error.error?.message || 'Error al iniciar sesión');
   }
-
+}
   async logout(): Promise<void> {
     try {
       await firstValueFrom(this.apiService.logout());
@@ -157,8 +197,13 @@ export class AuthService {
           name: response.user.name,
           email: response.user.email,
           roles: response.user.roles,
-          permissions: response.user.permissions
+          permissions: response.user.permissions,
+          client_id: response.user.client_id ?? response.user.clientId ?? null,
+          clientId:  response.user.clientId  ?? response.user.client_id ?? null,
+          client_name: response.user.client_name ?? response.user.clientName ?? null,
+          clientName:  response.user.clientName  ?? response.user.client_name ?? null,
         });
+        await this.preloadClientObras();
       } catch (error) {
         console.error('Token inválido, limpiando sesión');
         this.logout();
@@ -169,4 +214,44 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!this.user();
   }
+  isSuperAdmin(): boolean {
+  const r = this.user()?.roles ?? [];
+  return r.includes('superadmin'); // ajusta si tu backend usa otro nombre
+  }
+
+  activeClientId(): number | null {
+    console.log('AuthService.activeClientId ->', this.user());
+    const u = this.user();
+    return (u?.clientId ?? u?.client_id ?? null) as number | null;
+  }
+
+  activeClientName(): string { 
+    const u = this.user();
+    return (u?.clientName ?? u?.client_name ?? '') || '';
+  }
+  private async preloadClientObras() {
+    // Si es super admin, no precargamos (verá todas en Tab2)
+    if (this.isSuperAdmin()) {
+      this.obrasCliente.set(null);
+      return;
+    }
+
+  const id = this.activeClientId();
+  if (!id) {
+    // usuario sin cliente asignado
+    this.obrasCliente.set([]);
+    return;
+  }
+
+  try {
+    const res = await firstValueFrom(this.apiService.getObrasByCliente(id));
+    // tu API devuelve { data: Obra[] }
+    this.obrasCliente.set(res?.data ?? []);
+  } catch (e) {
+    console.error('Preload obrasCliente failed:', e);
+    this.obrasCliente.set([]);
+  }
+}
+
+
 }
