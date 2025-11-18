@@ -1,5 +1,5 @@
-import { CanMatchFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
+import { CanMatchFn, Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 
 const TOKEN_KEY = 'auth_token';
@@ -7,7 +7,8 @@ const ROLE_KEY = 'auth_role';
 
 export const authGuard: CanMatchFn = async () => {
   const router = inject(Router);
-  const token = (await Preferences.get({ key: TOKEN_KEY })).value;
+  const token = localStorage.getItem('auth_token');
+  // const token = (await Preferences.get({ key: TOKEN_KEY })).value;
   if (token) return true;
   router.navigateByUrl('/login', { replaceUrl: true });
   return false;

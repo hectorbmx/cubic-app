@@ -10,11 +10,15 @@
   min-height: 100%;
   padding: 24px 20px;
 }
-
+ion-toolbar {
+  // --background: #3d5a80;
+  --background: #0D1E35;
+  --color: white;
+}
 // Sección del Logo
 .logo-section {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 22px;
   width: 100%;
   max-width: 440px;
 
@@ -23,13 +27,13 @@
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 193, 7, 0.3);
     border-radius: 20px;
-    padding: 24px;
+    padding: 20px;
     margin: 0 auto 24px;
     width: fit-content;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 
     .logo {
-      width: 180px;
+      width: 300px !important;
       height: auto;
       display: block;
     }

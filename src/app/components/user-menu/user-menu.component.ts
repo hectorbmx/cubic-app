@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonButton, IonIcon, IonPopover, IonList, IonItem, IonLabel, IonAvatar } from '@ionic/angular/standalone';
-import { AuthService } from '../../core/services/auth.service';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { IonAvatar, IonButton, IonIcon, IonItem, IonLabel, IonList, IonPopover } from '@ionic/angular/standalone';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-menu',
@@ -21,7 +21,10 @@ export class UserMenuComponent {
     // @ViewChild('menuPopover', { static: false }) popover?: IonPopover;
 
   user() { return this.auth.user(); }
-  
+    goToProfile() {
+    this.router.navigate(['/user-perfil']); // ajusta la ruta si tu path es otro
+  }
+
 
   async goPerfil() {
     console.log('[UserMenu] goPerfil');

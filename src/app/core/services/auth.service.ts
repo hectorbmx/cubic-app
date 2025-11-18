@@ -80,9 +80,8 @@
 // }
 // de aqui para arriba funciona con mock
 import { Injectable, signal } from '@angular/core';
-// import { ApiService } from './api.service';
-import { ApiService } from './api';
 import { firstValueFrom } from 'rxjs';
+import { ApiService } from './api';
 
 export type User = {
   id: number;
@@ -147,26 +146,27 @@ export class AuthService {
     const savedUser = localStorage.getItem('user');
 
     if (token && savedUser) {
-      try {
+      // try {
         this.user.set(JSON.parse(savedUser));
         
         // Verificar token con el backend
-        const response = await firstValueFrom(this.apiService.me());
-        this.user.set({
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          roles: response.user.roles,
-          permissions: response.user.permissions
-        });
-      } catch (error) {
-        console.error('Token inválido, limpiando sesión');
-        this.logout();
-      }
-    }
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.user();
+      //   const response = await firstValueFrom(this.apiService.me());
+      //   this.user.set({
+      //     id: response.user.id,
+      //     name: response.user.name,
+      //     email: response.user.email,
+      //     roles: response.user.roles,
+      //     permissions: response.user.permissions
+      //   });
+      // } catch (error) {
+      //   console.error('Token inválido, limpiando sesión');
+      //   this.logout();
+      // }
+    // }
   }
 }
+}
+  // isAuthenticated(): boolean {
+  //   return !!this.user();
+  // }
+// }

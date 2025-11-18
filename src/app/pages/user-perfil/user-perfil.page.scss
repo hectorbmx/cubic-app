@@ -1,211 +1,266 @@
-ion-toolbar {
-  --background: #3d5a80;
-  --color: white;
-}
-
-ion-content {
-  --background: #f5f6fa;
-}
-
-// Card Header de Perfil
-.profile-header-card {
-  background: linear-gradient(135deg, #3d5a80 0%, #2c4a6b 100%);
-  padding: 40px 24px 32px;
-  margin: 16px 16px 24px;
-  border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  color: white;
-  text-align: center;
-}
-
-.profile-photo-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-
-  .photo-container {
-    position: relative;
-    width: 120px;
-    height: 120px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 4px solid white;
-      object-fit: cover;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .edit-photo-btn {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #ffd700;
-      border: 3px solid white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-      ion-icon {
-        font-size: 20px;
-        color: #2c4a6b;
-      }
-    }
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, #1d3a63 0%, #21446f 100%);
+    --color: #ffffff;
+    --border-width: 0;
   }
 
-  .user-name {
-    font-size: 24px;
+  ion-title {
     font-weight: 700;
-    margin: 0;
-    color: white;
-  }
-
-  .user-role {
-    font-size: 14px;
-    margin: 0;
-    opacity: 0.9;
-  }
-}
-
-// Secciones de Info
-.info-section {
-  padding: 0 16px;
-  margin-bottom: 24px;
-
-  .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c4a6b;
-    margin: 0 0 12px 4px;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 }
 
-// Tarjeta de Info
-.info-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+ion-content {
+  --background: #f2f4f7;
 }
 
+/* ====== CARD SUPERIOR (FONDO AZUL + FOTO) ====== */
+
+.profile-header-card {
+  /* Fondo azul con gradiente */
+  background: radial-gradient(circle at 20% 0%, #2f578e 0, #1d3a63 40%, #152743 100%);
+  border-bottom-left-radius: 36px;
+  border-bottom-right-radius: 36px;
+
+  /* si quieres que también tenga las de arriba redondeadas: */
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+
+  padding: 40px 20px 72px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+}
+
+.profile-photo-section {
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Foto circular */
+.photo-container {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  background: #ffffff;
+  border: 5px solid #ffd54f;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Botón cámara amarillo sobre la foto */
+.edit-photo-btn {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #ffc107;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.edit-photo-btn ion-icon {
+  font-size: 30px;
+  color: #1d3a63;
+}
+
+/* Nombre y rol */
+.profile-photo-section h2 {
+  margin: 0;
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.user-role {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ====== SECCIONES DE INFO ====== */
+
+.info-section {
+  max-width: 420px;
+  margin: 18px auto 0;
+  padding: 0 16px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #344055;
+  margin: 0 0 10px;
+}
+
+/* Tarjeta blanca */
+.info-card {
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+  padding: 4px 0;
+}
+
+/* Cada fila */
 .info-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  transition: background 0.2s;
-
-  &.clickable {
-    cursor: pointer;
-
-    &:active {
-      background: #f5f6fa;
-    }
-  }
-
-  .info-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #3d5a80 0%, #2c4a6b 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .info-icon {
-      font-size: 20px;
-      color: white;
-    }
-  }
-
-  .info-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    .info-label {
-      font-size: 12px;
-      color: #999;
-      font-weight: 500;
-    }
-
-    .info-value {
-      font-size: 15px;
-      color: #2c4a6b;
-      font-weight: 600;
-    }
-  }
-
-  .edit-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: transparent;
-    border: 2px solid #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    ion-icon {
-      font-size: 18px;
-      color: #666;
-    }
-
-    &:active {
-      background: #f5f6fa;
-      border-color: #3d5a80;
-
-      ion-icon {
-        color: #3d5a80;
-      }
-    }
-  }
-
-  .chevron-icon {
-    font-size: 20px;
-    color: #ccc;
-  }
+  padding: 10px 14px;
 }
 
+.info-item.clickable {
+  cursor: pointer;
+}
+
+/* Icono circular a la izquierda */
+.info-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f4f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.info-icon {
+  font-size: 18px;
+  color: #1d3a63;
+}
+
+/* Texto de cada fila */
+.info-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #8c96a8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+/* Botón de editar a la derecha */
+.edit-btn {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn ion-icon {
+  font-size: 18px;
+  color: #c0c7d5;
+}
+
+/* Flecha de las opciones de cuenta */
+.chevron-icon {
+  font-size: 18px;
+  color: #c0c7d5;
+}
+
+/* Separador entre filas */
 .info-divider {
   height: 1px;
-  background: #f0f0f0;
-  margin: 0 20px;
+  margin: 0 14px;
+  background: #edf0f4;
 }
 
-// Botón de Logout
+/* ====== CERRAR SESIÓN Y VERSIÓN ====== */
+
 .logout-section {
-  padding: 0 16px 16px;
-
-  .logout-btn {
-    --border-radius: 12px;
-    --border-width: 2px;
-    height: 48px;
-    font-weight: 600;
-    text-transform: none;
-  }
+  max-width: 420px;
+  margin: 22px auto 0;
+  padding: 0 16px;
 }
 
-// Versión de la App
+.logout-btn {
+  --border-radius: 26px;
+  --border-color: #ff5252;
+  --color: #ff5252;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.logout-btn ion-icon {
+  margin-right: 4px;
+}
+
 .app-version {
   text-align: center;
-  padding: 16px;
-  
-  p {
-    font-size: 12px;
-    color: #999;
-    margin: 0;
+  margin: 10px 0 18px;
+  font-size: 12px;
+  color: #9da5b5;
+}
+
+/* ====== RESPONSIVE PEQUEÑO ====== */
+
+@media (max-width: 400px) {
+  .profile-header-card {
+  /* Fondo azul con gradiente */
+  background: radial-gradient(circle at 20% 0%, #2f578e 0, #1d3a63 40%, #152743 100%);
+  border-bottom-left-radius: 36px;
+  border-bottom-right-radius: 36px;
+
+  /* si quieres que también tenga las de arriba redondeadas: */
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+
+  padding: 40px 20px 72px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+}
+
+  .photo-container {
+    width: 104px;
+    height: 104px;
+  }
+
+  .profile-photo-section h2 {
+    font-size: 20px;
+  }
+
+  .info-section {
+    padding: 0 12px;
+  }
+
+  .info-card {
+    border-radius: 18px;
   }
 }
