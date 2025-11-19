@@ -7,6 +7,11 @@ ion-tab-bar {
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
 }
 
+ion-toolbar {
+  // --background: #3d5a80;
+  --background: #0D1E35;
+  --color: white;
+}
 // ion-tab-bar {
 //   --background: #ffffff;
 //   --color: #0D1E35;          /* iconos inactivos azul oscuro */

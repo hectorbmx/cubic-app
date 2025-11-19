@@ -1,5 +1,6 @@
 <!-- Botón que abre el popover -->
-<ion-button fill="clear" (click)="isOpen = true">
+<!-- <ion-button fill="clear" (click)="isOpen = true"> -->
+  <ion-button (click)="goPerfil()">
   <ion-avatar slot="icon-only">
     <img [src]="user()?.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'" 
          alt="Usuario">

@@ -1,25 +1,29 @@
-<ion-header [translucent]="true">
+<!-- <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button ><ion-icon name="arrow-back-outline"></ion-icon></ion-back-button>
     </ion-buttons>
     <ion-title>Mi Perfil</ion-title>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" *ngIf="user">
   <!-- Card de Perfil -->
   <div class="profile-header-card">
     <!-- Foto de Perfil -->
     <div class="profile-photo-section">
       <div class="photo-container">
-        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil">
+        <img *ngIf="user.avatar_path" [src]="user.avatar_path" alt="Foto de perfil">
+
+        <!-- <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil"> -->
         <button class="edit-photo-btn">
           <ion-icon name="camera-outline"></ion-icon>
+            <!-- <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil"> -->
+
         </button>
       </div>
-      <h2 class="user-name">Juan Pérez</h2>
-      <p class="user-role">Administrador</p>
+      <h2>{{ user.name }} </h2>
+      <p class="user-role">{{ user.roles }}</p>
     </div>
   </div>
 
@@ -34,7 +38,7 @@
         </div>
         <div class="info-content">
           <span class="info-label">Correo Electrónico</span>
-          <span class="info-value">juan.perez@ejemplo.com</span>
+          <span class="info-value">{{ user.email }} </span>
         </div>
         <button class="edit-btn">
           <ion-icon name="create-outline"></ion-icon>
@@ -49,7 +53,7 @@
         </div>
         <div class="info-content">
           <span class="info-label">Teléfono</span>
-          <span class="info-value">+52 333 123 4567</span>
+          <span class="info-value">{{ user.phone }}</span>
         </div>
         <button class="edit-btn">
           <ion-icon name="create-outline"></ion-icon>
@@ -64,7 +68,7 @@
         </div>
         <div class="info-content">
           <span class="info-label">Nombre Completo</span>
-          <span class="info-value">Juan Pérez Hernández</span>
+          <span class="info-value">{{ user.first_name }} {{ user.last_name }} </span>
         </div>
         <button class="edit-btn">
           <ion-icon name="create-outline"></ion-icon>
@@ -79,7 +83,7 @@
         </div>
         <div class="info-content">
           <span class="info-label">Puesto</span>
-          <span class="info-value">Gerente de Proyectos</span>
+          <span class="info-value">{{ user.position }}</span>
         </div>
         <button class="edit-btn">
           <ion-icon name="create-outline"></ion-icon>
@@ -119,7 +123,8 @@
 
   <!-- Botón de Cerrar Sesión -->
   <div class="logout-section">
-    <ion-button class="logout-btn" expand="block" fill="outline" color="danger">
+    <ion-button class="logout-btn" expand="block" fill="outline" color="danger" (click)="logout()">
+       <!-- <ion-item button (click)="logout()"></ion-item> -->
       <ion-icon name="log-out-outline" slot="start"></ion-icon>
       Cerrar Sesión
     </ion-button>

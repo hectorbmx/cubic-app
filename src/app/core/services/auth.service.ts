@@ -80,11 +80,9 @@
 // }
 // de aqui para arriba funciona con mock
 import { Injectable, signal } from '@angular/core';
-// import { ApiService } from './api.service';
-import { ApiService } from './api';
 import { firstValueFrom } from 'rxjs';
+import { ApiService } from './api';
 import { Obra } from 'src/app/models/obra';
-
 
 export type User = {
   id: number;
@@ -187,7 +185,7 @@ async login(email: string, password: string): Promise<void> {
     const savedUser = localStorage.getItem('user');
 
     if (token && savedUser) {
-      try {
+      // try {
         this.user.set(JSON.parse(savedUser));
         
         // Verificar token con el backend
@@ -197,13 +195,8 @@ async login(email: string, password: string): Promise<void> {
           name: response.user.name,
           email: response.user.email,
           roles: response.user.roles,
-          permissions: response.user.permissions,
-          client_id: response.user.client_id ?? response.user.clientId ?? null,
-          clientId:  response.user.clientId  ?? response.user.client_id ?? null,
-          client_name: response.user.client_name ?? response.user.clientName ?? null,
-          clientName:  response.user.clientName  ?? response.user.client_name ?? null,
+          permissions: response.user.permissions
         });
-        await this.preloadClientObras();
       } catch (error) {
         console.error('Token inválido, limpiando sesión');
         this.logout();
@@ -214,44 +207,4 @@ async login(email: string, password: string): Promise<void> {
   isAuthenticated(): boolean {
     return !!this.user();
   }
-  isSuperAdmin(): boolean {
-  const r = this.user()?.roles ?? [];
-  return r.includes('superadmin'); // ajusta si tu backend usa otro nombre
-  }
-
-  activeClientId(): number | null {
-    console.log('AuthService.activeClientId ->', this.user());
-    const u = this.user();
-    return (u?.clientId ?? u?.client_id ?? null) as number | null;
-  }
-
-  activeClientName(): string { 
-    const u = this.user();
-    return (u?.clientName ?? u?.client_name ?? '') || '';
-  }
-  private async preloadClientObras() {
-    // Si es super admin, no precargamos (verá todas en Tab2)
-    if (this.isSuperAdmin()) {
-      this.obrasCliente.set(null);
-      return;
-    }
-
-  const id = this.activeClientId();
-  if (!id) {
-    // usuario sin cliente asignado
-    this.obrasCliente.set([]);
-    return;
-  }
-
-  try {
-    const res = await firstValueFrom(this.apiService.getObrasByCliente(id));
-    // tu API devuelve { data: Obra[] }
-    this.obrasCliente.set(res?.data ?? []);
-  } catch (e) {
-    console.error('Preload obrasCliente failed:', e);
-    this.obrasCliente.set([]);
-  }
-}
-
-
-}
+  
