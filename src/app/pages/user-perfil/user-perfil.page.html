@@ -13,14 +13,19 @@
     <!-- Foto de Perfil -->
     <div class="profile-photo-section">
       <div class="photo-container">
-        <img *ngIf="user.avatar_path" [src]="user.avatar_path" alt="Foto de perfil">
-
-        <!-- <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil"> -->
+        <!-- <img *ngIf="user.avatar_path" [src]="user.avatar_path" alt="Foto de perfil"> -->
+        <img *ngIf="user?.avatar_path as avatar" [src]="avatar" alt="Foto de perfil" />
+        
         <button class="edit-photo-btn">
           <ion-icon name="camera-outline"></ion-icon>
-            <!-- <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Foto de perfil"> -->
-
         </button>
+        <input
+          type="file"
+          accept="image/*"
+          #fileInput
+          hidden
+          (change)="onFileSelected($event)"
+        />
       </div>
       <h2>{{ user.name }} </h2>
       <p class="user-role">{{ user.roles }}</p>

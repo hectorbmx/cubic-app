@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject,ElementRef,ViewChild } from '@angular/core';
 import {
   IonBackButton,
   IonButton,
@@ -24,7 +24,7 @@ export interface User {
   email: string;
   phone: string;
   avatar_path?: string | null;
-  roles: string | null;
+  roles: string[] | null;
   position: string |  null;
 }
 
@@ -46,12 +46,17 @@ export interface User {
   styleUrls: ['./user-perfil.page.scss'],
 })
 export class UserPerfilPage implements OnInit {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   private apiService = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
   user: User | null = null;
   loading = false;
   error: string | null = null;
+    
+
+  selectedPhoto: File | null = null;
+  photoPreviewUrl: string | null = null;
 
   constructor( ) {}
 
@@ -77,12 +82,11 @@ private loadUser() {
       this.user = {
         id: userData.id,
         name: userData.name,
-        first_name: userData.firstname ?? '',
-        last_name: userData.lastName ?? '',
+        first_name: userData.first_name ?? '',
+        last_name: userData.last_name ?? '',
         email: userData.email,
         phone: userData.phone,
-        avatar_path: userData.photoUrl ? `${baseBackendUrl}${userData.photoUrl}` :null,
-        // avatar_path: userData.photoUrl ?? null,
+        avatar_path: userData.photoUrl || null, // ✅ Asigna directamente
         roles: userData.roles ?? [], // 👈 ESTA LÍNEA
         position: userData.position ?? '',
       };
@@ -103,4 +107,27 @@ async logout() {
     await this.auth.logout();
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }
+    onChangePhotoClick() {
+    // Abrir el navegador de archivos
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+
+    if (!file) {
+      return;
+    }
+
+    // Guardamos el archivo en memoria
+    this.selectedPhoto = file;
+
+    // Opcional: generar preview
+    this.photoPreviewUrl = URL.createObjectURL(file);
+
+    console.log('Foto seleccionada:', file);
+  }
+  
+
 }
