@@ -6,7 +6,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" scrollEvents="true" (ionScroll)="onScroll($event)">
 
   <!-- Después del ion-header collapse -->
 

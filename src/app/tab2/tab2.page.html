@@ -5,7 +5,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" scrollEvents="true" (ionScroll)="onScroll($event)">
   <div class="obras-container">
     <!-- Header con título y botón -->
   

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule,DOCUMENT } from '@angular/common';
+import { Component, Inject, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonAccordion,
@@ -50,9 +50,49 @@ type Obra = {
   styleUrls: ['./obras-cliente.page.scss'],
 })
 export class ObrasClientePage implements OnInit {
+  private lastScrollTop = 0;
+  private hiding = false;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(ApiService);
+
+    constructor(@Inject(DOCUMENT) private document: Document) {}
+    onScroll(ev: CustomEvent) {
+    const scrollTop = (ev.detail as any).scrollTop || 0;
+
+    if (scrollTop <= 0) {
+      // hasta arriba → mostrar menú
+      this.setTabBarHidden(false);
+      this.lastScrollTop = 0;
+      return;
+    }
+
+    // si la diferencia es muy pequeña, ignoramos (para que no parpadee)
+    const diff = scrollTop - this.lastScrollTop;
+    if (Math.abs(diff) < 5) {
+      return;
+    }
+
+    if (diff > 0) {
+      // bajando → ocultar
+      this.setTabBarHidden(true);
+    } else {
+      // subiendo → mostrar
+      this.setTabBarHidden(false);
+    }
+
+    this.lastScrollTop = scrollTop;
+  }
+private setTabBarHidden(hidden: boolean) {
+    if (this.hiding === hidden) return; // ya está en ese estado
+
+    const tabBar = this.document.querySelector('ion-tab-bar') as HTMLElement | null;
+    if (!tabBar) return;
+
+    tabBar.style.transition = 'transform 200ms ease';
+    tabBar.style.transform = hidden ? 'translateY(100%)' : 'translateY(0)';
+    this.hiding = hidden;
+  }
 
   clienteId!: number;
   clienteNombre: string = '';

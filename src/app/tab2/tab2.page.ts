@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, inject } from '@angular/core';
+import { CommonModule ,DOCUMENT} from '@angular/common';
 import {
   IonHeader,
   IonToolbar,
@@ -18,15 +18,6 @@ import { AuthService } from '../core/services/auth.service';
 import { Obra } from 'src/app/models/obra';
 
 type Status = 'planning' | 'in_progress' | 'completed';
-
-// type Obra = {
-//   id: number;
-//   clienteId: number;
-//   clienteNombre: string;
-//   nombre: string;
-//   estado: string;
-//   progreso: number;
-// };
 
 @Component({
   selector: 'app-tab2',
@@ -50,6 +41,49 @@ export class Tab2Page implements OnInit {
   private apiService = inject(ApiService);
   private router = inject(Router);
   private auth = inject(AuthService);
+  
+
+  private lastScrollTop = 0;
+  private hiding = false;
+
+  constructor(@Inject(DOCUMENT) private document: Document) {}
+    onScroll(ev: CustomEvent) {
+    const scrollTop = (ev.detail as any).scrollTop || 0;
+
+    if (scrollTop <= 0) {
+      // hasta arriba → mostrar menú
+      this.setTabBarHidden(false);
+      this.lastScrollTop = 0;
+      return;
+    }
+
+    // si la diferencia es muy pequeña, ignoramos (para que no parpadee)
+    const diff = scrollTop - this.lastScrollTop;
+    if (Math.abs(diff) < 5) {
+      return;
+    }
+
+    if (diff > 0) {
+      // bajando → ocultar
+      this.setTabBarHidden(true);
+    } else {
+      // subiendo → mostrar
+      this.setTabBarHidden(false);
+    }
+
+    this.lastScrollTop = scrollTop;
+  }
+private setTabBarHidden(hidden: boolean) {
+    if (this.hiding === hidden) return; // ya está en ese estado
+
+    const tabBar = this.document.querySelector('ion-tab-bar') as HTMLElement | null;
+    if (!tabBar) return;
+
+    tabBar.style.transition = 'transform 200ms ease';
+    tabBar.style.transform = hidden ? 'translateY(100%)' : 'translateY(0)';
+    this.hiding = hidden;
+  }
+
 
   search = '';
   statusSelected: string = 'all';

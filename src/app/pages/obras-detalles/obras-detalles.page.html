@@ -12,7 +12,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content 
+[fullscreen]="true" scrollEvents="true" (ionScroll)="onScroll($event)">
   <!-- Loading -->
   <div class="loading-container" *ngIf="loading">
     <ion-spinner name="crescent"></ion-spinner>
