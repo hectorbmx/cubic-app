@@ -5,7 +5,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
+  IonButton,IonRefresher,IonRefresherContent,
   IonIcon,
   IonSearchbar,
   IonSpinner
@@ -32,7 +32,7 @@ type Status = 'planning' | 'in_progress' | 'completed';
     IonIcon,
     IonSearchbar,
     IonSpinner,
-    UserMenuComponent
+    UserMenuComponent,IonRefresher,IonRefresherContent
   ],
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss']
@@ -168,4 +168,8 @@ async loadObras() {
     console.log('Navegando a detalle de obra:', obraId);
     this.router.navigate(['/tabs/tab1/obras', clienteId, 'detalle', obraId]);
   }
+   doRefresh(event: any) {
+  this.loadObras();        // tu función existente
+  event.target.complete();    // cerrar el refresher
+}
 }

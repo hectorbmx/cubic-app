@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header >
   <ion-toolbar>
     <ion-title>CLIENTES</ion-title>
     
@@ -7,7 +7,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" scrollEvents="true" (ionScroll)="onScroll($event)">
-
+ <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down-circle-outline"
+      pullingText="Desliza hacia abajo para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando..."
+    ></ion-refresher-content>
+  </ion-refresher>
   <!-- Después del ion-header collapse -->
 
 <div class="clients-container">

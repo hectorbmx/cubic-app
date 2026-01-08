@@ -5,7 +5,7 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonContent,
+  IonContent,IonRefresher,IonRefresherContent,
   IonButton,
   IonIcon,
   IonSearchbar,
@@ -35,7 +35,7 @@ type Cliente = {
     IonIcon,
     IonSearchbar,
     IonSpinner,
-    UserMenuComponent
+    UserMenuComponent,IonRefresher,IonRefresherContent
   ],
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss']
@@ -131,4 +131,10 @@ export class Tab1Page implements OnInit {
     console.log('Navegando a obras del cliente:', clienteId);
     this.router.navigate(['/tabs/tab1/obras', clienteId]);
   }
+ doRefresh(event: any) {
+  this.loadClientes();        // tu función existente
+  event.target.complete();    // cerrar el refresher
+}
+
+
 }

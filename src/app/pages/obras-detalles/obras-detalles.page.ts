@@ -12,8 +12,8 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
+  
+  
   IonSegment,
   IonSegmentButton,
   IonSpinner,
@@ -36,7 +36,7 @@ import { FileHandlerService } from '../../core/services/file-handler';
     FormsModule,
     IonHeader,
     IonToolbar,
-    IonItem,
+    
     IonTitle,
     IonContent,
     IonButtons,
@@ -45,7 +45,7 @@ import { FileHandlerService } from '../../core/services/file-handler';
     IonIcon,
     IonSegment,
     IonSegmentButton,
-    IonLabel,
+    
     IonSpinner
   ],
   templateUrl: './obras-detalles.page.html',

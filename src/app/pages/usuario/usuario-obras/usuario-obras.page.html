@@ -1,0 +1,70 @@
+<ion-header class="custom-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        <span class="back-text">BACK</span>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>DETALLES</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="obras-content">
+  
+  <!-- Selector de Obra - SELECT NATIVO -->
+  <div class="obra-selector-wrapper">
+    <select 
+      *ngIf="obras.length > 0"
+      class="native-select"
+      [(ngModel)]="obraIdSeleccionada"
+      (change)="onObraChange()"
+    >
+      <option [value]="null" disabled>Selecciona una obra</option>
+      <option 
+        *ngFor="let obra of obras; trackBy: trackByFn" 
+        [value]="obra.id"
+      >
+        {{ obra.name || obra.nombre || ('Obra #' + obra.id) }}
+      </option>
+    </select>
+
+    <div *ngIf="obras.length === 0" class="loading-text">
+      Cargando obras...
+    </div>
+  </div>
+
+  <!-- Grid de Opciones -->
+  <div class="options-grid">
+    <div class="option-card" (click)="openSection('info')">
+      <ion-icon name="stats-chart-outline"></ion-icon>
+      <p>información<br>general</p>
+    </div>
+    
+    <div class="option-card" (click)="openSection('timeline')">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <p>Historial<br>Detalles</p>
+    </div>
+
+    <div class="option-card" (click)="openSection('camaras')">
+      <ion-icon name="videocam-outline"></ion-icon>
+      <p>cámaras<br>de obra</p>
+    </div>
+    
+    <div class="option-card" (click)="openSection('fotos')">
+      <ion-icon name="camera-outline"></ion-icon>
+      <p>fotografías</p>
+    </div>
+
+    <div class="option-card" (click)="openSection('planos')">
+      <ion-icon name="triangle-outline"></ion-icon>
+      <p>planos</p>
+    </div>
+    
+    <div class="option-card" (click)="openSection('informes')">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <p>informes</p>
+    </div>
+  </div>
+
+</ion-content>

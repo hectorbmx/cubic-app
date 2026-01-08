@@ -21,28 +21,17 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../pages/user-perfil/user-perfil.page').then((m) => m.UserPerfilPage),
       },
+
+      // Default dentro de tabs (redirect relativo)
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: 'tab1',
         pathMatch: 'full',
       },
-      {
-      path: 'tab1/obras/:clienteId',
-        loadComponent: () =>
-          import('../pages/obras-cliente/obras-cliente.page').then(m => m.ObrasClientePage)
-      },
-       {
-        path: 'tab1/obras/:clienteId/detalle/:obraId',  // <- NUEVA RUTA
-        loadComponent: () =>
-          import('../pages/obras-detalles/obras-detalles.page').then(m => m.ObrasDetallesPage)
-      },
-          {
-        path: 'user-perfil',
-        loadComponent: () => import('../pages/user-perfil/user-perfil.page').then( m => m.UserPerfilPage)
-      },
-
     ],
   },
+
+  // Default global a tabs
   {
     path: '',
     redirectTo: '/tabs/tab1',

@@ -1,0 +1,28 @@
+<ion-tabs>
+  <ion-router-outlet></ion-router-outlet>
+
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="home" href="/usuario/home">
+      <ion-icon name="people-circle-outline"></ion-icon>
+      <ion-label>Directorio</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="obras" href="/usuario/obras">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Obras</ion-label>
+    </ion-tab-button>
+
+    <!-- Si quieres perfil real como tab, usa esto:
+    <ion-tab-button tab="perfil" href="/usuario/perfil">
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <ion-label>Perfil</ion-label>
+    </ion-tab-button>
+    -->
+
+    <!-- Salir como acción (recomendado) -->
+    <ion-tab-button (click)="logout()">
+      <ion-icon name="exit-outline"></ion-icon>
+      <ion-label>Salir</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

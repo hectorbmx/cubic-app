@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+ion-tabs {
+  height: 100%;
+}
+
+/* Forzamos que el tab bar exista y se vea */
+ion-tab-bar {
+  display: flex !important;
+  height: 58px !important;
+  z-index: 9999 !important;
+
+  --background: #0b1b33;
+  --color: rgba(255, 255, 255, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+ion-tab-button {
+  --color-selected: #ffc107;
+}
+:host {
+  display: contents;
+}
+
+ion-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// CRÍTICO: El router-outlet NO debe capturar clicks
+ion-router-outlet {
+  flex: 1;
+  position: relative !important;
+  pointer-events: none !important; // ← El outlet es transparente a clicks
+  contain: layout size style;
+  
+  // Pero todo lo que está DENTRO sí debe capturar clicks
+  ::ng-deep > * {
+    pointer-events: auto !important;
+  }
+  
+  // Las páginas deben ser clickeables
+  ::ng-deep .ion-page {
+    pointer-events: auto !important;
+    position: relative !important;
+  }
+}
+
+// Tab bar siempre visible y clickeable
+ion-tab-bar {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1000;
+}

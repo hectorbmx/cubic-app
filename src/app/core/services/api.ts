@@ -22,8 +22,6 @@ export class ApiService {
 
   // Auth
   login(email: string, password: string): Observable<any> {
-      const url = `${environment.apiUrl}login`;
-  console.log('[API] POST ->', url, { email });
     return this.http.post(`${this.apiUrl}/login`, { email, password }, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -31,19 +29,19 @@ export class ApiService {
       })
     });
   }
-  // Auth
-register(email: string, password: string, passwordConfirmation: string): Observable<any> {
-  return this.http.post(`${this.apiUrl}/register`, { 
-    email, 
-    password,
-    password_confirmation: passwordConfirmation 
-  }, {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    })
-  });
-}
+
+  register(email: string, password: string, passwordConfirmation: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, { 
+      email, 
+      password,
+      password_confirmation: passwordConfirmation 
+    }, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      })
+    });
+  }
 
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/logout`, {}, {
@@ -83,11 +81,10 @@ register(email: string, password: string, passwordConfirmation: string): Observa
       headers: this.getHeaders()
     });
   }
-getObrasByCliente(clienteId: number): Observable<any> {
-  return this.http.get(`${this.apiUrl}/obras/cliente/${clienteId}`, {
-    headers: this.getHeaders()
-  });
-}
 
-
+  getObrasByCliente(clienteId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/obras/cliente/${clienteId}`, {
+      headers: this.getHeaders()
+    });
+  }
 }
