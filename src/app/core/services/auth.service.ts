@@ -19,6 +19,7 @@ export type User = {
   clientId?: number | null;
   client_name?: string | null;
   clientName?: string | null;
+  
 };
 
 @Injectable({
@@ -28,6 +29,15 @@ export class AuthService {
   user = signal<User | null>(null);
   obrasCliente = signal<Obra[] | null>(null);
  
+ private readonly TOKEN_KEY = 'auth_token';
+ private readonly USER_KEY = 'user';
+ private readonly ROLE_KEY = 'auth_role';
+
+ private normalizeRole(role?: string | null): string | null {
+  if (!role) return null;
+  return String(role).trim().toLowerCase().replace(/[_-]/g, '');
+}
+
   constructor(private apiService: ApiService) {
     this.loadUser();
   }
@@ -40,8 +50,12 @@ async login(email: string, password: string): Promise<void> {
 
     // Guardar token
     localStorage.setItem('auth_token', response.token);
-    
-    // Guardar usuario con su lista de clientes
+    // Guardar role (para que el guard no te saque en F5)
+    const roles: string[] = response.user?.roles ?? [];
+    const primaryRole = roles[0] ?? null;
+    const normalizedRole = this.normalizeRole(primaryRole) ?? 'user';
+    localStorage.setItem(this.ROLE_KEY, normalizedRole);
+        // Guardar usuario con su lista de clientes
     this.user.set({
       id: response.user.id,
       name: response.user.name,
@@ -100,33 +114,76 @@ async login(email: string, password: string): Promise<void> {
       this.user.set(null);
     }
   }
+async loadUser(): Promise<void> {
+  const token = localStorage.getItem('auth_token');
+  const savedUser = localStorage.getItem('user');
 
-  async loadUser(): Promise<void> {
-    const token = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('user');
+  if (!token || !savedUser) return;
 
-    if (token && savedUser) {
-      try {
-        this.user.set(JSON.parse(savedUser));
-        
-        // Verificar token con el backend
-        const response = await firstValueFrom(this.apiService.me());
-        this.user.set({
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          roles: response.user.roles,
-          permissions: response.user.permissions
-        });
-      } catch (error) {
-        console.error('Token inválido, limpiando sesión');
-        this.logout();
-      }
+  // 1) Cargar desde storage
+  try {
+    const u = JSON.parse(savedUser);
+    this.user.set(u);
+
+    // reconstruir auth_role si falta
+    if (!localStorage.getItem('auth_role')) {
+      const roles: string[] = u?.roles ?? [];
+      const primary = roles[0] ?? 'user';
+      const normalized = String(primary).trim().toLowerCase().replace(/[_-]/g, '');
+      localStorage.setItem('auth_role', normalized);
     }
+  } catch {
+    // storage corrupto => logout
+    await this.logout();
+    return;
   }
 
-  isAuthenticated(): boolean {
-    return !!this.user();
+  // 2) Verificar con backend (pero NO mates sesión por cualquier falla)
+  try {
+    const res: any = await firstValueFrom(this.apiService.me());
+
+    // Soporta ambos formatos:
+    // A) { user: {...} }
+    // B) { id, name, email, roles, permissions, ... }
+    const fresh = res?.user ?? res;
+
+    if (!fresh || fresh.id == null) {
+      // respuesta rara, no tiramos sesión, solo avisamos
+      console.warn('[AUTH] /me sin payload válido:', res);
+      return;
+    }
+
+    this.user.set({
+      ...(this.user() ?? {}),
+      id: fresh.id,
+      name: fresh.name,
+      email: fresh.email,
+      roles: fresh.roles ?? this.user()?.roles,
+      permissions: fresh.permissions ?? this.user()?.permissions,
+    });
+
+    localStorage.setItem('user', JSON.stringify(this.user()));
+
+    // asegurar auth_role actualizado
+    const roles: string[] = (fresh.roles ?? this.user()?.roles ?? []);
+    const primary = roles[0] ?? localStorage.getItem('auth_role') ?? 'user';
+    const normalized = String(primary).trim().toLowerCase().replace(/[_-]/g, '');
+    localStorage.setItem('auth_role', normalized);
+
+  } catch (error: any) {
+    const status = error?.status;
+
+    // SOLO limpiar sesión si realmente no está autenticado
+    if (status === 401 || status === 419) {
+      console.warn('[AUTH] Token inválido (401/419), cerrando sesión');
+      await this.logout();
+      return;
+    }
+
+    // Errores de red / backend caído / timeout: NO logout
+    console.warn('[AUTH] No se pudo validar /me (conservamos sesión):', error);
   }
+}
+
   
 }

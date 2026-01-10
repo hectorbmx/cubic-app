@@ -14,6 +14,7 @@ import {
 import { UserMenuComponent } from '../components/user-menu/user-menu.component';
 import { Router } from '@angular/router';
 import { ApiService } from '../core/services/api';
+import { firstValueFrom } from 'rxjs';
 
 type Cliente = { 
   id: number; 
@@ -96,22 +97,22 @@ export class Tab1Page implements OnInit {
   ngOnInit() {
     this.loadClientes();
   }
+async loadClientes() {
+  this.loading = true;
+  this.error = '';
 
-  async loadClientes() {
-    this.loading = true;
-    this.error = '';
-
-    try {
-      const response = await this.apiService.getClientes().toPromise();
-      this.clientes = response.clientes;
-    } catch (err: any) {
-      this.error = 'Error al cargar clientes';
-      console.error('Error loading clientes:', err);
-    } finally {
-      this.loading = false;
-    }
+  try {
+    const response = await firstValueFrom(this.apiService.getClientes());
+    console.log('Clientes recibidos:', response);
+    // // this.clientes = response.clientes;
+    this.clientes = response.data ?? [];
+  } catch (err: any) {
+    this.error = 'Error al cargar clientes';
+    console.error('Error loading clientes:', err);
+  } finally {
+    this.loading = false;
   }
-
+}
   get filteredClientes() {
     if (!this.search.trim()) {
       return this.clientes;
