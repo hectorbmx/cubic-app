@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NavController } from '@ionic/angular';
+
 import {
   IonContent,
   // IonCard,
@@ -41,6 +43,8 @@ export class LoginPage {
   private router = inject(Router);
   private loadingCtrl = inject(LoadingController);
   private toastCtrl = inject(ToastController);
+  private navCtrl = inject(NavController);
+
 
   email = '';
   password = '';
@@ -67,9 +71,15 @@ export class LoginPage {
       await loading.dismiss();
       this.showToast('¡Bienvenido!', 'success');
       // this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+      // const url = this.auth.getRedirectUrl();
+      // console.log('[LOGIN] Redirect ->', url, 'roles:', this.auth.user()?.roles);
+      // await this.router.navigateByUrl(url, { replaceUrl: true });
       const url = this.auth.getRedirectUrl();
       console.log('[LOGIN] Redirect ->', url, 'roles:', this.auth.user()?.roles);
-      await this.router.navigateByUrl(url, { replaceUrl: true });
+
+      // Para Ionic Tabs es más estable
+      this.navCtrl.navigateRoot(url);
+
 
     } catch (err: any) {
       await loading.dismiss();

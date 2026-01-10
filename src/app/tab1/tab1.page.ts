@@ -103,7 +103,7 @@ export class Tab1Page implements OnInit {
 
     try {
       const response = await this.apiService.getClientes().toPromise();
-      this.clientes = response.clientes;
+      this.clientes = response.data;
     } catch (err: any) {
       this.error = 'Error al cargar clientes';
       console.error('Error loading clientes:', err);

@@ -128,14 +128,24 @@ localStorage.setItem('auth_role', roleNormalized);
         this.user.set(JSON.parse(savedUser));
         
         // Verificar token con el backend
-        const response = await firstValueFrom(this.apiService.me());
-        this.user.set({
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          roles: response.user.roles,
-          permissions: response.user.permissions
-        });
+     const response: any = await firstValueFrom(this.apiService.me());
+
+// response es plano (no response.user)
+this.user.set({
+  ...(this.user() ?? {}),
+  id: response.id,
+  name: response.name,
+  email: response.email,
+  roles: response.roles,
+  permissions: response.permissions,
+  clientes: response.clientes,
+  client_id: response.client_id ?? null,
+  clientId: response.clientId ?? null,
+  client_name: response.client_name ?? null,
+  clientName: response.clientName ?? null,
+});
+
+localStorage.setItem('user', JSON.stringify(this.user()));
       } catch (error) {
         console.error('Token inválido, limpiando sesión');
         this.logout();

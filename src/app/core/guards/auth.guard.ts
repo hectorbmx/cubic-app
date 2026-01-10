@@ -26,21 +26,28 @@ function clearAuthStorage(): void {
   localStorage.removeItem(USER_KEY);
 }
 
-export const authGuard: CanMatchFn = (): boolean | UrlTree => {
+export const authGuard: CanMatchFn = () => {
   const router = inject(Router);
 
   const token = localStorage.getItem(TOKEN_KEY);
   const role  = localStorage.getItem(ROLE_KEY);
-  const user  = localStorage.getItem(USER_KEY);
+  const userRaw = localStorage.getItem(USER_KEY);
 
-  const ok = !!token && !!role && isValidStoredUser(user);
+  const ok = !!token && !!role && isValidStoredUser(userRaw);
+  
+
   if (ok) return true;
 
-  clearAuthStorage();
+  // limpia basura
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(USER_KEY);
+
+  // CLAVE: no router.navigateByUrl aquí; devuelve UrlTree
   return router.parseUrl('/login');
 };
 
-export const guestGuard: CanMatchFn = (): boolean | UrlTree => {
+export const guestGuard: CanMatchFn = () => {
   const router = inject(Router);
 
   const token = localStorage.getItem(TOKEN_KEY);
@@ -49,14 +56,15 @@ export const guestGuard: CanMatchFn = (): boolean | UrlTree => {
 
   const ok = !!token && !!roleRaw && isValidStoredUser(userRaw);
 
-  // Invitado: puede entrar a /login, /register, etc.
   if (!ok) {
-    clearAuthStorage();
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
+    localStorage.removeItem(USER_KEY);
     return true;
   }
 
-  // Autenticado: redirigir según rol
   const role = normalizeRole(roleRaw);
   const redirectUrl = role === 'superadmin' ? '/tabs/tab1' : '/usuario/home';
+
   return router.parseUrl(redirectUrl);
 };
