@@ -4,9 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
+  // IonCard,
+  // IonCardContent,
   IonItem,
   IonInput,
   IonButton,
@@ -25,9 +24,8 @@ import { AuthService } from '../../core/services/auth.service';
     CommonModule,
     FormsModule,
     IonContent,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
+    // IonCard,
+    // IonCardContent,
     IonItem,
     IonInput,
     IonButton,
@@ -50,18 +48,9 @@ export class LoginPage {
   loading = false;
   error = '';
 
-  private normalizeRole(role?: string | null): string | null {
-    if (!role) return null;
-    return String(role).trim().toLowerCase().replace(/[_-]/g, '');
-  }
-
-  private isSuperAdminByRoles(roles: string[]): boolean {
-    return roles.some(r => this.normalizeRole(r) === 'superadmin');
-  }
-
   async submit() {
     if (!this.email || !this.password) {
-      await this.showToast('Por favor completa todos los campos', 'warning');
+      this.showToast('Por favor completa todos los campos', 'warning');
       return;
     }
 
@@ -75,28 +64,17 @@ export class LoginPage {
 
     try {
       await this.auth.login(this.email, this.password);
-
-      const roles: string[] = this.auth.user()?.roles ?? [];
-      const isSuperadmin = this.isSuperAdminByRoles(roles);
-
-      console.log('[LOGIN] Roles:', roles);
-      console.log('[LOGIN] isSuperadmin:', isSuperadmin);
-
       await loading.dismiss();
-      await this.showToast('¡Bienvenido!', 'success');
+      this.showToast('¡Bienvenido!', 'success');
+      // this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+      const url = this.auth.getRedirectUrl();
+      console.log('[LOGIN] Redirect ->', url, 'roles:', this.auth.user()?.roles);
+      await this.router.navigateByUrl(url, { replaceUrl: true });
 
-      if (isSuperadmin) {
-        console.log('[LOGIN] Navegando a /tabs/tab1');
-        await this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
-      } else {
-        console.log('[LOGIN] Navegando a /usuario/home');
-        await this.router.navigateByUrl('/usuario/home', { replaceUrl: true });
-      }
     } catch (err: any) {
-      console.error('[LOGIN] Error:', err);
       await loading.dismiss();
-      this.error = err?.message || 'Error al iniciar sesión';
-      await this.showToast(this.error, 'danger');
+      this.error = err.message || 'Error al iniciar sesión';
+      this.showToast(this.error, 'danger');
     } finally {
       this.loading = false;
     }
@@ -112,7 +90,7 @@ export class LoginPage {
     await toast.present();
   }
   goToRegister() {
-    console.log('[LOGIN] Navegando a /register');
-    this.router.navigate(['/register']);
-  }
+  console.log('Navegando a la página de registro');
+  this.router.navigate(['/register']);
+}
 }
