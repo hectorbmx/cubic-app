@@ -3,6 +3,9 @@
 <ion-header class="custom-header ion-no-border">
   <ion-toolbar>
     <ion-title>DIRECTORIO</ion-title>
+       <ion-buttons slot="end">
+      <app-user-profile-button></app-user-profile-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -40,8 +43,8 @@
       <div class="persona-actions">
         <!-- Tel -->
         <a class="action"
-           *ngIf="p.telefono || p.phone"
-           [href]="'tel:' + (p.telefono ?? p.phone)">
+           *ngIf="p.telefono || p.celular"
+           [href]="'tel:' + (p.telefono ?? p.celular)">
           <ion-icon name="call-outline"></ion-icon>
         </a>
 

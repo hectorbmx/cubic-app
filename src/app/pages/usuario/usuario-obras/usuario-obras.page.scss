@@ -236,6 +236,44 @@
       font-size: 13px;
     }
   }
+  .option-card--wide {
+  grid-column: 1 / -1;  
+  justify-self: center;          // ocupa las 2 columnas
+  min-height: 80px;            // un poco más baja para que no “pese” demasiado
+  padding: 22px 55px;
+  max-width: 360px;             // evita que se vea enorme en pantallas grandes
+  justify-self: center;         // centrada dentro del grid
+
+  ion-icon {
+    font-size: 42px;            // ligeramente menor para balance visual
+  }
+
+  p {
+    font-size: 13.5px;
+  }
+}
+// .icon-img {
+//   width: 82px;
+//   height: 82px;
+//   display: block;
+// }
+/* SOLO 3D renders */
+.option-card--renders {
+  gap: 1px;              /* separación icono-texto SOLO aquí */
+}
+
+.option-card--renders .icon-img {
+  width: 82px;           /* pon el tamaño que quieras */
+  height: 82px;
+  display: block;        /* evita baseline/espacios raros */
+  margin: 0;             /* por si trae algo heredado */
+}
+
+.option-card--renders p {
+  margin: 0;
+  line-height: 1.1;
+}
+
 }
 
 // ============================================
@@ -268,4 +306,16 @@
       font-size: 12px;
     }
   }
+}
+
+.obra-image-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3px;
+    margin-top:15px;
+    
+    img {
+        width: 10%;
+        height: auto;
+    }
 }

@@ -1,0 +1,158 @@
+// Variables de color basadas en tu app
+$bg-dark: #1a2332;
+$bg-card: #253447;
+$accent-yellow: #f5b742;
+$text-primary: #ffffff;
+$text-secondary: #a8b2c1;
+$border-radius: 16px;
+
+// Header personalizado
+.custom-header {
+  ion-toolbar {
+    --background: #{$bg-dark};
+    --color: #{$text-primary};
+    
+    ion-title {
+      color: $accent-yellow;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+    
+    ion-back-button {
+      --color: #{$accent-yellow};
+    }
+  }
+}
+
+// Contenido principal
+.profile-content {
+  --background: #{$bg-dark};
+  padding: 20px 16px;
+}
+
+// Tarjeta principal del perfil
+.profile-card {
+  background: $bg-card;
+  border-radius: $border-radius;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar {
+  text-align: center;
+  margin-bottom: 16px;
+  
+  ion-icon {
+    font-size: 80px;
+    color: $accent-yellow;
+  }
+}
+
+.profile-main {
+  text-align: center;
+}
+
+.profile-name {
+  color: $text-primary;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.profile-email {
+  color: $text-secondary;
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+.profile-meta {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(168, 178, 193, 0.2);
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.meta-label {
+  color: $text-secondary;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.meta-value {
+  color: $text-primary;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+// Secciones
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  color: $text-primary;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 4px;
+}
+
+// Chips de permisos
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: $bg-card;
+  color: $text-primary;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  border: 1px solid rgba(245, 183, 66, 0.3);
+}
+
+.empty {
+  color: $text-secondary;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+// Lista de clientes
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-item {
+  background: $bg-card;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.li-title {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.li-sub {
+  color: $text-secondary;
+  font-size: 13px;
+}

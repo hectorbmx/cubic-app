@@ -87,4 +87,28 @@ export class ApiService {
       headers: this.getHeaders()
     });
   }
+    // Password Reset (Público)
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/password/forgot`, { email }, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      })
+    });
+  }
+
+  resetPassword(payload: {
+    rid: string;
+    code: string;
+    password: string;
+    password_confirmation: string;
+  }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/password/reset`, payload, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      })
+    });
+  }
+
 }

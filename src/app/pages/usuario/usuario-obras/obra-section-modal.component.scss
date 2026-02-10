@@ -1,0 +1,209 @@
+/* Stack general para separar “cards” y bloques */
+.section-stack {
+  display: grid;
+  gap: 14px; /* ESTE es el “salto” entre cards */
+}
+
+/* Base: misma “superficie” para todas las tarjetas */
+.card-surface {
+  background: rgba(14, 27, 46, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* ====== Info Card ====== */
+.info-card {
+  padding: 14px;
+}
+
+.obra-image {
+  position: relative;
+  height: 150px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scale(1.02);
+  }
+
+  .image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.10) 0%,
+      rgba(0,0,0,0.55) 100%
+    );
+  }
+}
+
+.info-list {
+  display: grid;
+  gap: 10px;
+}
+
+.info-item {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 6px;
+  }
+
+  .label {
+    font-size: 12px;
+    letter-spacing: 0.2px;
+    color: rgba(255, 255, 255, 0.58);
+    margin-bottom: 4px;
+  }
+
+  .value {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .description {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+/* ====== People List ====== */
+.people-wrap {
+  display: grid;
+  gap: 12px; /* salto ENTRE personas */
+}
+
+.person-card {
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.person-left {
+  min-width: 0;
+}
+
+.person-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+/* Botones de acción (tel/mail) homogéneos */
+.person-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(18, 35, 60, 0.95);
+  border: 1px solid rgba(255, 200, 50, 0.28);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+
+  ion-icon {
+    font-size: 18px;
+    color: rgba(255, 200, 50, 0.92);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Empty state consistente */
+.empty-state {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(14, 27, 46, 0.55);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.70);
+  font-size: 13px;
+}
+/* Título de sección */
+.section-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Item de persona con iconos a la derecha */
+.person-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.person-content {
+  flex: 1;
+  min-width: 0; /* Permite truncamiento si es necesario */
+}
+
+.person-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0; /* Evita que los iconos se compriman */
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn:hover,
+.action-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.action-btn ion-icon {
+  font-size: 20px;
+}
+

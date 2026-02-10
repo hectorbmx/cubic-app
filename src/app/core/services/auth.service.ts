@@ -12,6 +12,7 @@ export type User = {
   email: string;
   photoURL?: string;
   roles?: string[];
+  phone?: string[];
   permissions?: string[];
   clientes?: Array<{ id: number; name: string; email: string }>; // ← NUEVO
 
@@ -20,7 +21,17 @@ export type User = {
   clientId?: number | null;
   client_name?: string | null;
   clientName?: string | null;
+   obras?: Array<{
+    id: number;
+    client_id: number;
+    name?: string;
+    code?: string;
+    status?: string;
+    role?: string | null;
+  }>;
+  obra_ids?: number[];
 };
+
 
 @Injectable({
   providedIn: 'root'
@@ -96,6 +107,27 @@ localStorage.setItem('auth_role', roleNormalized);
     // Guardar en localStorage
     localStorage.setItem('user', JSON.stringify(this.user()));
     
+    const me: any = await firstValueFrom(this.apiService.me());
+  this.user.set({
+      ...(this.user() ?? {}),
+      id: me.id,
+      name: me.name,
+      email: me.email,
+      phone: me.phone,
+      roles: me.roles,
+      permissions: me.permissions,
+      clientes: me.clientes,
+      client_id: me.client_id ?? null,
+      clientId: me.clientId ?? null,
+      client_name: me.client_name ?? null,
+      clientName: me.clientName ?? null,
+
+      // 🔥 claves para tu caso
+      obras: me.obras ?? [],
+      obra_ids: (me.obra_ids ?? []).map((x: any) => Number(x)),
+    });
+        localStorage.setItem('user', JSON.stringify(this.user()));
+
   } catch (error: any) {
     console.error('Login error:', error);
     throw new Error(error.error?.message || 'Error al iniciar sesión');
@@ -136,6 +168,7 @@ this.user.set({
   id: response.id,
   name: response.name,
   email: response.email,
+  phone:response.phone,
   roles: response.roles,
   permissions: response.permissions,
   clientes: response.clientes,
@@ -168,7 +201,7 @@ isSuperAdminByRoles(roles?: string[] | null): boolean {
 
 getRedirectUrl(): string {
   const roles = this.user()?.roles ?? [];
-  return this.isSuperAdminByRoles(roles) ? '/tabs/tab1' : '/usuario/home';
+  return this.isSuperAdminByRoles(roles) ? '/tabs/tab1' : '/usuario/obras';
 }
 
 }

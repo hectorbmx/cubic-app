@@ -7,11 +7,14 @@ import { ObraSectionModalComponent } from './obra-section-modal.component';
 import { IonSelect } from '@ionic/angular/standalone';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { UserProfileButtonComponent } from 'src/app/components/user-menu/user-profile-button/user-profile-button.component';
+import { firstValueFrom } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { 
   IonContent, 
   IonHeader, 
   IonTitle, 
-  IonToolbar, 
+  IonToolbar,IonRefresher,IonRefresherContent,
   IonButtons,
   IonButton,
   IonIcon,
@@ -24,10 +27,10 @@ import {
   chevronBackOutline, 
   statsChartOutline,
   calendarOutline,
-  videocamOutline,
+  videocamOutline,exitOutline,
   cameraOutline,
   triangleOutline,
-  documentTextOutline, chevronDownOutline } from 'ionicons/icons';
+  documentTextOutline, chevronDownOutline, clipboardOutline, peopleCircleOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-usuario-obras',
@@ -37,8 +40,8 @@ import {
   imports: [
     IonContent, 
     IonHeader, 
-    IonTitle, 
-    IonToolbar, 
+    IonTitle, IonRefresher,IonRefresherContent,
+    IonToolbar, UserProfileButtonComponent,
     IonButtons,
     IonButton,
     IonIcon,
@@ -56,82 +59,118 @@ export class UsuarioObrasPage implements OnInit {
   constructor(
     private router: Router,
     private modalCtrl: ModalController,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private sanitizer: DomSanitizer
   ) {
-    addIcons({chevronBackOutline,chevronDownOutline,statsChartOutline,calendarOutline,videocamOutline,cameraOutline,triangleOutline,documentTextOutline});
+    addIcons({chevronBackOutline,exitOutline,statsChartOutline,calendarOutline,videocamOutline,cameraOutline,triangleOutline,documentTextOutline,peopleCircleOutline,clipboardOutline,chevronDownOutline});
   }
 
-  ngOnInit(): void {
-      this.modalCtrl.getTop().then(modal => {
+  
+ngOnInit(): void {
+  this.modalCtrl.getTop().then(modal => {
     if (modal) {
       console.log('[OBRAS] Hay un modal abierto, cerrándolo...');
       modal.dismiss();
     }
   });
-    const userRaw = localStorage.getItem('user');
-    if (!userRaw) {
-      console.error('[OBRAS] No hay user en storage');
-      return;
-    }
 
-    let clienteId: number | null = null;
-    try {
-      const user = JSON.parse(userRaw);
-      clienteId = Number(user.clientId ?? user.client_id ?? null);
-    } catch (e) {
-      console.error('[OBRAS] Error parseando user', e);
-    }
-
-    if (!clienteId) {
-      console.error('[OBRAS] No hay cliente_id válido');
-      return;
-    }
-
-    // Cargar obras
-    this.apiService.getObrasByCliente(clienteId).subscribe({
-      next: (res: any) => {
-        // Extraer array de datos
-        let listaFinal = [];
-        if (res?.data && Array.isArray(res.data)) {
-          listaFinal = res.data;
-        } else if (Array.isArray(res)) {
-          listaFinal = res;
-        } else {
-          listaFinal = [res];
-        }
-
-        // Normalizar IDs a números
-        this.obras = listaFinal.map((o: any) => ({
-          ...o,
-          id: Number(o.id)
-        }));
-
-        console.log('[OBRAS] Obras cargadas:', this.obras);
-
-        // Establecer valor inicial
-        if (this.obras.length > 0) {
-          const savedId = localStorage.getItem('obra_id');
-          
-          if (savedId) {
-            const savedIdNum = Number(savedId);
-            const encontrada = this.obras.find(o => o.id === savedIdNum);
-            if (encontrada) {
-              this.obraIdSeleccionada = savedIdNum;
-            }
-          }
-          
-          // Si no hay selección, tomar la primera
-          if (!this.obraIdSeleccionada) {
-            this.obraIdSeleccionada = this.obras[0].id;
-            localStorage.setItem('obra_id', String(this.obras[0].id));
-          }
-          
-          console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
-        }
-      },
-      error: (err) => console.error('[OBRAS] Error:', err)
-    });
+  const userRaw = localStorage.getItem('user');
+  if (!userRaw) {
+    console.error('[OBRAS] No hay user en storage');
+    return;
   }
+
+  let user: any = null;
+  try {
+    user = JSON.parse(userRaw);
+  } catch (e) {
+    console.error('[OBRAS] Error parseando user', e);
+    return;
+  }
+
+  const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+  const isUserRole = roles.includes('user'); // residente
+
+  // ✅ SI ES "user": usar SOLO obras asignadas que ya vienen en /me
+  if (isUserRole) {
+    const obrasAsignadas = Array.isArray(user?.obras) ? user.obras : [];
+
+    // Normalizar IDs
+    this.obras = obrasAsignadas.map((o: any) => ({
+      ...o,
+      id: Number(o.id),
+      client_id: Number(o.client_id),
+    }));
+
+    console.log('[OBRAS] Obras asignadas (desde /me):', this.obras);
+
+    // Selección inicial (misma lógica que ya tenías)
+    if (this.obras.length > 0) {
+      const savedId = localStorage.getItem('obra_id');
+
+      if (savedId) {
+        const savedIdNum = Number(savedId);
+        const encontrada = this.obras.find(o => o.id === savedIdNum);
+        if (encontrada) this.obraIdSeleccionada = savedIdNum;
+      }
+
+      if (!this.obraIdSeleccionada) {
+        this.obraIdSeleccionada = this.obras[0].id;
+        localStorage.setItem('obra_id', String(this.obras[0].id));
+      }
+
+      console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+    }
+
+    return; // 👈 importante: no caer al endpoint por cliente
+  }
+
+  // ✅ SI NO ES "user" (admin/superadmin): aquí puedes seguir usando el endpoint por cliente si aplica
+  const clienteId = Number(user.clientId ?? user.client_id ?? null);
+  if (!clienteId) {
+    console.error('[OBRAS] No hay cliente_id válido');
+    return;
+  }
+
+  this.apiService.getObrasByCliente(clienteId).subscribe({
+    next: (res: any) => {
+      let listaFinal: any[] = [];
+      if (res?.data && Array.isArray(res.data)) {
+        listaFinal = res.data;
+      } else if (Array.isArray(res)) {
+        listaFinal = res;
+      } else {
+        listaFinal = [res];
+      }
+
+      this.obras = listaFinal.map((o: any) => ({
+        ...o,
+        id: Number(o.id),
+      }));
+
+      console.log('[OBRAS] Obras cargadas (por cliente):', this.obras);
+
+      if (this.obras.length > 0) {
+        const savedId = localStorage.getItem('obra_id');
+
+        if (savedId) {
+          const savedIdNum = Number(savedId);
+          const encontrada = this.obras.find(o => o.id === savedIdNum);
+          if (encontrada) this.obraIdSeleccionada = savedIdNum;
+        }
+
+        if (!this.obraIdSeleccionada) {
+          this.obraIdSeleccionada = this.obras[0].id;
+          localStorage.setItem('obra_id', String(this.obras[0].id));
+        }
+
+        console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+      }
+    },
+    error: (err) => console.error('[OBRAS] Error:', err),
+  });
+}
+
 
   goBack() {
     this.router.navigate(['/usuario']);
@@ -148,7 +187,7 @@ export class UsuarioObrasPage implements OnInit {
     return item.id;
   }
 
-async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'informes') {
+async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'informes' | 'directorio') {
   // 1) Asegurar obraId SIEMPRE
   let obraId = this.obraIdSeleccionada;
 
@@ -193,5 +232,154 @@ async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' 
     }
   }
   
+private getClienteId(): number | null {
+  const userRaw = localStorage.getItem('user');
+  if (!userRaw) {
+    console.error('[OBRAS] No hay user en storage');
+    return null;
+  }
+
+  try {
+    const user = JSON.parse(userRaw);
+    const clienteId = Number(user.clientId ?? user.client_id ?? null);
+    return clienteId || null;
+  } catch (e) {
+    console.error('[OBRAS] Error parseando user', e);
+    return null;
+  }
+}
+
+private cargarObras(onFinish?: () => void) {
+  const clienteId = this.getClienteId();
+
+  if (!clienteId) {
+    console.error('[OBRAS] No hay cliente_id válido');
+    onFinish?.();
+    return;
+  }
+
+  this.apiService.getObrasByCliente(clienteId).subscribe({
+    next: (res: any) => {
+      let listaFinal: any[] = [];
+      if (res?.data && Array.isArray(res.data)) {
+        listaFinal = res.data;
+      } else if (Array.isArray(res)) {
+        listaFinal = res;
+      } else {
+        listaFinal = [res];
+      }
+
+      this.obras = listaFinal.map((o: any) => ({
+        ...o,
+        id: Number(o.id)
+      }));
+
+      console.log('[OBRAS] Obras cargadas:', this.obras);
+
+      if (this.obras.length > 0) {
+        const savedId = localStorage.getItem('obra_id');
+
+        if (savedId) {
+          const savedIdNum = Number(savedId);
+          const encontrada = this.obras.find(o => o.id === savedIdNum);
+          if (encontrada) {
+            this.obraIdSeleccionada = savedIdNum;
+          }
+        }
+
+        if (!this.obraIdSeleccionada) {
+          this.obraIdSeleccionada = this.obras[0].id;
+          localStorage.setItem('obra_id', String(this.obras[0].id));
+        }
+
+        console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+      }
+
+      onFinish?.();
+    },
+    error: (err) => {
+      console.error('[OBRAS] Error:', err);
+      onFinish?.();
+    }
+  });
+}
+private refrescarMe(onFinish?: () => void) {
+  this.apiService.me().subscribe({
+    next: (me: any) => {
+      // Actualiza user en storage manteniendo compatibilidad
+      localStorage.setItem('user', JSON.stringify(me));
+
+      // Si es rol user: tomar obras asignadas desde /me
+      const roles: string[] = Array.isArray(me?.roles) ? me.roles : [];
+      const isUserRole = roles.includes('user');
+
+      if (isUserRole) {
+        const obrasAsignadas = Array.isArray(me?.obras) ? me.obras : [];
+
+        this.obras = obrasAsignadas.map((o: any) => ({
+          ...o,
+          id: Number(o.id),
+          client_id: Number(o.client_id),
+        }));
+
+        // Mantener selección
+        if (this.obras.length > 0) {
+          const savedId = localStorage.getItem('obra_id');
+
+          if (savedId) {
+            const savedIdNum = Number(savedId);
+            const encontrada = this.obras.find(o => o.id === savedIdNum);
+            if (encontrada) this.obraIdSeleccionada = savedIdNum;
+          }
+
+          if (!this.obraIdSeleccionada) {
+            this.obraIdSeleccionada = this.obras[0].id;
+            localStorage.setItem('obra_id', String(this.obras[0].id));
+          }
+        } else {
+          // Si ya no tiene obras asignadas, limpiar selección
+          this.obraIdSeleccionada = null;
+          localStorage.removeItem('obra_id');
+        }
+
+        console.log('[OBRAS] Refrescado desde /me:', this.obras);
+        onFinish?.();
+        return;
+      }
+
+      // Si NO es user, dejamos que el refresher use el endpoint por cliente
+      onFinish?.();
+    },
+    error: (err) => {
+      console.error('[OBRAS] Error refrescando /me', err);
+      onFinish?.();
+    },
+  });
+}
+doRefresh(event: any) {
+  // Siempre refrescamos /me primero para tener data fresca en storage
+  this.refrescarMe(() => {
+    // Luego, si no es rol user, refrescamos por cliente
+    const userRaw = localStorage.getItem('user');
+    let user: any = null;
+
+    try {
+      user = userRaw ? JSON.parse(userRaw) : null;
+    } catch {
+      user = null;
+    }
+
+    const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+    const isUserRole = roles.includes('user');
+
+    if (isUserRole) {
+      event?.target?.complete();
+      return;
+    }
+
+    // admin/superadmin: refrescar listado por cliente
+    this.cargarObras(() => event?.target?.complete());
+  });
+}
 
 }

@@ -2,14 +2,14 @@
   <div class="container">
     <!-- Logo -->
     <div class="logo-section">
-      <img src="assets/logo.png" alt="Cubic33 Group" class="logo">
-      <p class="welcome-subtitle">Ingresa tus credenciales para ingresar</p>
+      <img src="assets/logoGroup.png" alt="Cubic33 Group" class="logo">
+      <!-- <p class="welcome-subtitle">Ingresa tus credenciales para ingresar</p> -->
     </div>
 
     <!-- Formulario de Login -->
     <div class="login-form">
       <div class="field">
-        <label>Correo Electrónico:</label>
+        <label>Email:</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="mail-outline" slot="start"></ion-icon>
           <ion-input 
@@ -21,7 +21,7 @@
       </div>
 
       <div class="field">
-        <label>Contraseña:</label>
+        <label>Password:</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input 
@@ -32,22 +32,29 @@
         </ion-item>
       </div>
 
-      <div class="row">
-        <div class="remember-container">
-          <ion-checkbox [(ngModel)]="remember"></ion-checkbox>
-          <span class="remember-text">Recuérdame</span>
-        </div>
-        <a class="link">¿Olvidaste tu contraseña?</a>
-      </div>
+ <div class="row remember-row">
+  <div class="remember-left">
+    <ion-checkbox [(ngModel)]="remember"></ion-checkbox>
+    <span class="remember-text">Remember me</span>
+  </div>
+
+
+</div>
+
 
       <ion-button expand="block" class="primary-btn" [disabled]="loading" (click)="submit()">
-        {{ loading ? 'ingresando…' : 'iniciar sesión' }}
+        {{ loading ? 'Logging in' : 'Login' }}
       </ion-button>
 
       <div class="foot">
-        <span>¿Eres nuevo?</span> 
-        <a class="link" (click)="goToRegister()">Regístrate aquí</a>
-      </div>
+  <span>new User?
+  <a class="link" (click)="goToRegister()">Sign up here</a></span>
+
+      <a class="link forgot-link" (click)="goToPasswordReset($event)">
+        forgot password?
+      </a>
+    </div>
+
 
       <ion-text color="danger" class="error-message" *ngIf="error">
         <ion-icon name="alert-circle-outline"></ion-icon>

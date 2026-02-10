@@ -2,14 +2,14 @@
   <ion-router-outlet></ion-router-outlet>
 
   <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home" href="/usuario/home">
+    <!-- <ion-tab-button tab="home" href="/usuario/home">
       <ion-icon name="people-circle-outline"></ion-icon>
       <ion-label>Directorio</ion-label>
-    </ion-tab-button>
+    </ion-tab-button> -->
 
     <ion-tab-button tab="obras" href="/usuario/obras">
       <ion-icon name="settings-outline"></ion-icon>
-      <ion-label>Obras</ion-label>
+      <ion-label>Works</ion-label>
     </ion-tab-button>
 
     <!-- Si quieres perfil real como tab, usa esto:
@@ -20,9 +20,19 @@
     -->
 
     <!-- Salir como acción (recomendado) -->
-    <ion-tab-button (click)="logout()">
+    <!-- <ion-tab-button (click)="logout()"> -->
+      <ion-tab-button (click)="logout($event)">
+
       <ion-icon name="exit-outline"></ion-icon>
-      <ion-label>Salir</ion-label>
+      <ion-label>Exit</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>
+
+<ion-alert
+  [isOpen]="logoutOpen"
+  header="Cerrar sesión"
+  message="¿Deseas cerrar sesión?"
+  [buttons]="logoutButtons"
+  (didDismiss)="logoutOpen = false">
+</ion-alert>

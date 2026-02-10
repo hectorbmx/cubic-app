@@ -145,6 +145,7 @@ ion-toolbar {
     font-weight: 400;
   }
 
+  
   ion-checkbox {
     --size: 18px;
     --checkbox-background-checked: #FFC107;
@@ -164,6 +165,7 @@ ion-toolbar {
       color: #f9a825;
     }
   }
+  
 }
 
 // Botón principal
@@ -194,6 +196,9 @@ ion-toolbar {
 
 // Footer
 .foot {
+  display: flex;
+  flex-direction: column; // 👈 esto crea el salto
+  gap: 10px;
   text-align: center;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
@@ -210,6 +215,11 @@ ion-toolbar {
       color: #f9a825;
     }
   }
+  .forgot-link {
+  font-size: 13px;
+  color: #9c9c9c;
+  font-weight: 600;
+}
 }
 
 // Mensaje de error

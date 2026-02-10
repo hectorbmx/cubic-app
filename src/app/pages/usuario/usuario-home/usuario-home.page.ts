@@ -1,17 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar,IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar,IonIcon,IonButtons } from '@ionic/angular/standalone';
 import { ApiService } from 'src/app/core/services/api';
 import { addIcons } from 'ionicons';
 import { callOutline, mailOutline } from 'ionicons/icons';
+import { UserProfileButtonComponent } from 'src/app/components/user-menu/user-profile-button/user-profile-button.component';
 
 @Component({
   selector: 'app-usuario-home',
   templateUrl: './usuario-home.page.html',
   styleUrls: ['./usuario-home.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,IonIcon]
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,IonIcon,UserProfileButtonComponent,IonButtons]
 })
 export class UsuarioHomePage implements OnInit {
 
