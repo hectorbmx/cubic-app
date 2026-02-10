@@ -12,7 +12,7 @@ import {
   IonHeader,
   IonIcon,
   IonItem,
-  IonLabel,
+  
   IonSearchbar,
   IonSpinner,
   IonTitle,
@@ -33,7 +33,7 @@ type Obra = {
 @Component({
   selector: 'app-obras-cliente',
   standalone: true,
-  imports: [IonCard, IonLabel, IonItem, IonAccordion, IonAccordionGroup, 
+  imports: [IonCard,  IonItem, IonAccordion, IonAccordionGroup, 
     CommonModule, 
     IonHeader, 
     IonToolbar, 

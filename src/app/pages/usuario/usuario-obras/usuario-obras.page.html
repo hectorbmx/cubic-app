@@ -1,0 +1,88 @@
+<ion-header class="custom-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <!-- <ion-icon name="chevron-back-outline"></ion-icon> -->
+        <!-- <span class="back-text">BACK</span> -->
+      </ion-button>
+    </ion-buttons>
+    <ion-title>WORK DETAILS</ion-title>
+     <ion-buttons slot="end">
+      <app-user-profile-button></app-user-profile-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="obras-content">
+  
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+  <ion-refresher-content></ion-refresher-content>
+</ion-refresher>
+ <div class="obra-image-wrapper">
+    <img
+      src="assets/glyph.png"
+      alt="Obra"
+
+    />
+  </div>
+  <!-- Selector de Obra - SELECT NATIVO -->
+  <div class="obra-selector-wrapper">
+    <select 
+      *ngIf="obras.length > 0"
+      class="native-select"
+      [(ngModel)]="obraIdSeleccionada"
+      (change)="onObraChange()"
+    >
+      <option [value]="null" disabled>Select work</option>
+      <option 
+        *ngFor="let obra of obras; trackBy: trackByFn" 
+        [value]="obra.id"
+      >
+        {{ obra.name || obra.nombre || ('Obra #' + obra.id) }}
+      </option>
+    </select>
+
+    <div *ngIf="obras.length === 0" class="loading-text">
+      Loading works...
+    </div>
+  </div>
+
+  <!-- Grid de Opciones -->
+<!-- Grid de Opciones -->
+<div class="options-grid">
+  <div class="option-card" (click)="openSection('info')">
+    <ion-icon name="stats-chart-outline"></ion-icon>
+    <p>General<br>Info</p>
+  </div>
+  
+  <div class="option-card" (click)="openSection('timeline')">
+    <ion-icon name="calendar-outline"></ion-icon>
+    <p>Timeline</p>
+  </div>
+
+  <div class="option-card" (click)="openSection('camaras')">
+    <ion-icon name="videocam-outline"></ion-icon>
+    <p>Works<br>Cameras</p>
+  </div>
+  
+  <div class="option-card option-card--renders" (click)="openSection('fotos')">
+    <!-- <ion-icon name="camera-outline"></ion-icon> -->
+     <!-- <ion-icon src="assets/icons/camera.svg" class="icon-svg"></ion-icon> -->
+    <img src="assets/icons/camera.svg" class="icon-img" alt="camera" />
+
+    <p>3D /Renders</p>
+  </div>
+
+  <div class="option-card" (click)="openSection('planos')">
+         <ion-icon src="assets/icons/Photos.svg" class="icon-svg"></ion-icon>
+    <p>Drawings</p>
+  </div>
+  
+  <div class="option-card" (click)="openSection('informes')">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <p>Reports</p>
+  </div>
+
+</div>
+
+</ion-content>

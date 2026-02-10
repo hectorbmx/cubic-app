@@ -1,0 +1,62 @@
+
+
+<ion-header class="custom-header ion-no-border">
+  <ion-toolbar>
+    <ion-title>DIRECTORIO</ion-title>
+       <ion-buttons slot="end">
+      <app-user-profile-button></app-user-profile-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+
+  <!-- Estado cargando -->
+  <div class="state" *ngIf="loading">
+    Cargando directorio...
+  </div>
+
+  <!-- Sin obra seleccionada -->
+  <div class="state" *ngIf="!loading && !obraId">
+    Selecciona una obra en la pestaña "Obras" para ver el directorio.
+  </div>
+
+  <!-- Sin personas -->
+  <div class="state" *ngIf="!loading && obraId && personas.length === 0">
+    No hay personas registradas para esta obra.
+  </div>
+
+  <!-- Lista de personas -->
+  <div class="directorio" *ngIf="!loading && personas.length > 0">
+
+    <div class="persona-row" *ngFor="let p of personas">
+      <div class="persona-info">
+        <div class="persona-name">
+          {{ (p.nombre ?? p.name ?? '—') | uppercase }}
+          <span class="sep">:</span>
+          <span class="persona-role">
+            {{ p.rol ?? p.role ?? p.puesto ?? '' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="persona-actions">
+        <!-- Tel -->
+        <a class="action"
+           *ngIf="p.telefono || p.celular"
+           [href]="'tel:' + (p.telefono ?? p.celular)">
+          <ion-icon name="call-outline"></ion-icon>
+        </a>
+
+        <!-- Email -->
+        <a class="action"
+           *ngIf="p.email"
+           [href]="'mailto:' + p.email">
+          <ion-icon name="mail-outline"></ion-icon>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

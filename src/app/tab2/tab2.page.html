@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header >
   <ion-toolbar>
     <ion-title>OBRAS</ion-title>
     <app-user-menu slot="end"></app-user-menu>
@@ -6,6 +6,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" scrollEvents="true" (ionScroll)="onScroll($event)">
+   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down-circle-outline"
+      pullingText="Desliza hacia abajo para actualizar"
+      refreshingSpinner="circles"
+      refreshingText="Actualizando..."
+    ></ion-refresher-content>
+  </ion-refresher>
   <div class="obras-container">
     <!-- Header con título y botón -->
   

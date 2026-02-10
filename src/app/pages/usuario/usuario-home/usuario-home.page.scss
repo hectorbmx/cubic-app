@@ -1,0 +1,135 @@
+/* =========================
+   HEADER
+========================= */
+.custom-header {
+  ion-toolbar {
+    --background: #0d1e35;
+    --color: #ffc107;
+
+    ion-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+  }
+}
+
+/* =========================
+   CONTENT
+========================= */
+.home-content {
+  --background: linear-gradient(135deg, #2c3e50 0%, #1a2634 100%);
+  padding: 0;
+}
+
+/* =========================
+   STATES
+========================= */
+.state {
+  margin: 24px 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* =========================
+   DIRECTORIO LIST
+========================= */
+.directorio {
+  margin: 12px 0;
+}
+
+/* =========================
+   PERSON ROW
+========================= */
+.persona-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.persona-row:last-child {
+  border-bottom: none;
+}
+
+/* =========================
+   PERSON INFO
+========================= */
+.persona-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.persona-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+.sep {
+  margin: 0 4px;
+}
+
+.persona-role {
+  color: #ffc107;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+.persona-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 193, 7, 0.12);
+  text-decoration: none;
+}
+
+.action ion-icon {
+  font-size: 18px;
+  color: #ffc107;
+}
+
+/* =========================
+   ACTIVE / TOUCH FEEDBACK
+========================= */
+.persona-row:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.action:active {
+  background: rgba(255, 193, 7, 0.2);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 480px) {
+  .persona-name {
+    font-size: 13px;
+  }
+
+  .persona-role {
+    font-size: 12px;
+  }
+}

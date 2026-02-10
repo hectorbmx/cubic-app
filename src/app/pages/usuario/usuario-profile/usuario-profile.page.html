@@ -1,0 +1,58 @@
+<ion-header class="custom-header ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/usuario"></ion-back-button>
+    </ion-buttons>
+    <ion-title>PROFILE</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="profile-content">
+  <!-- Card principal -->
+  <div class="profile-card">
+    <div class="profile-avatar">
+      <ion-icon name="person-circle-outline"></ion-icon>
+    </div>
+
+    <div class="profile-main">
+      <h2 class="profile-name">{{ me?.name }}</h2>
+      <p class="profile-email">{{ me?.email }}</p>
+
+      <div class="profile-meta">
+        <div class="meta-item">
+          <span class="meta-label">Teléfono</span>
+          <span class="meta-value">{{ me?.phone || '—' }}</span>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Rol</span>
+          <span class="meta-value">{{ me?.roles?.[0] || '—' }}</span>
+        </div>
+
+        <div class="meta-item" *ngIf="me?.clientName">
+          <span class="meta-label">Cliente</span>
+          <span class="meta-value">{{ me?.clientName }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secciones -->
+  <div class="section">
+    <h3 class="section-title">Permissions</h3>
+    <div class="chips">
+      <span class="chip" *ngFor="let p of (me?.permissions || [])">{{ p }}</span>
+      <span class="empty" *ngIf="(me?.permissions?.length || 0) === 0">—</span>
+    </div>
+  </div>
+
+  <div class="section" *ngIf="(me?.clientes?.length || 0) > 0">
+    <h3 class="section-title">Clients</h3>
+    <div class="list">
+      <div class="list-item" *ngFor="let c of me?.clientes">
+        <div class="li-title">{{ c.name }}</div>
+        <div class="li-sub">{{ c.email }}</div>
+      </div>
+    </div>
+  </div>
+</ion-content>

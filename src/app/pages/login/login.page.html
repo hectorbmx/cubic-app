@@ -2,32 +2,26 @@
   <div class="container">
     <!-- Logo -->
     <div class="logo-section">
-      <div class="logo-card">
-        <img src="assets/logo.png" alt="Cubic33 México" class="logo">
-      </div>
-      <!-- <h1 class="welcome-title">Bienvenido al Portal de Construcción</h1> -->
-      <p class="welcome-subtitle">Gestiona tus proyectos, equipos y recursos desde una sola plataforma moderna e intuitiva.</p>
+      <img src="assets/logoGroup.png" alt="Cubic33 Group" class="logo">
+      <!-- <p class="welcome-subtitle">Ingresa tus credenciales para ingresar</p> -->
     </div>
 
     <!-- Formulario de Login -->
     <div class="login-form">
-      <h2 class="form-title">Iniciar Sesión</h2>
-      <p class="form-subtitle">Ingresa tus credenciales para continuar</p>
-
       <div class="field">
-        <label>Correo Electrónico</label>
+        <label>Email:</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="mail-outline" slot="start"></ion-icon>
           <ion-input 
             type="email" 
             [(ngModel)]="email" 
-            placeholder="tu@email.com">
+            placeholder="marketing@cubic33group.com">
           </ion-input>
         </ion-item>
       </div>
 
       <div class="field">
-        <label>Contraseña</label>
+        <label>Password:</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input 
@@ -38,19 +32,29 @@
         </ion-item>
       </div>
 
-      <div class="row">
-        <ion-checkbox [(ngModel)]="remember">Recuérdame</ion-checkbox>
-        <a class="link">¿Olvidaste tu contraseña?</a>
-      </div>
+ <div class="row remember-row">
+  <div class="remember-left">
+    <ion-checkbox [(ngModel)]="remember"></ion-checkbox>
+    <span class="remember-text">Remember me</span>
+  </div>
+
+
+</div>
+
 
       <ion-button expand="block" class="primary-btn" [disabled]="loading" (click)="submit()">
-        {{ loading ? 'Ingresando…' : 'Iniciar Sesión' }}
+        {{ loading ? 'Logging in' : 'Login' }}
       </ion-button>
 
       <div class="foot">
-        <span>¿Eres nuevo?</span> 
-        <a class="link" (click)="goToRegister()">Regístrate aquí</a>
-      </div>
+  <span>new User?
+  <a class="link" (click)="goToRegister()">Sign up here</a></span>
+
+      <a class="link forgot-link" (click)="goToPasswordReset($event)">
+        forgot password?
+      </a>
+    </div>
+
 
       <ion-text color="danger" class="error-message" *ngIf="error">
         <ion-icon name="alert-circle-outline"></ion-icon>

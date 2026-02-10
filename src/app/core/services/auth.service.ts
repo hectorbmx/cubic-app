@@ -4,6 +4,7 @@ import { Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from './api';
 import { Obra } from 'src/app/models/obra';
+import { NavController } from '@ionic/angular';
 
 export type User = {
   id: number;
@@ -11,6 +12,7 @@ export type User = {
   email: string;
   photoURL?: string;
   roles?: string[];
+  phone?: string[];
   permissions?: string[];
   clientes?: Array<{ id: number; name: string; email: string }>; // ← NUEVO
 
@@ -19,8 +21,17 @@ export type User = {
   clientId?: number | null;
   client_name?: string | null;
   clientName?: string | null;
-  
+   obras?: Array<{
+    id: number;
+    client_id: number;
+    name?: string;
+    code?: string;
+    status?: string;
+    role?: string | null;
+  }>;
+  obra_ids?: number[];
 };
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,16 +40,10 @@ export class AuthService {
   user = signal<User | null>(null);
   obrasCliente = signal<Obra[] | null>(null);
  
- private readonly TOKEN_KEY = 'auth_token';
- private readonly USER_KEY = 'user';
- private readonly ROLE_KEY = 'auth_role';
-
- private normalizeRole(role?: string | null): string | null {
-  if (!role) return null;
-  return String(role).trim().toLowerCase().replace(/[_-]/g, '');
-}
-
-  constructor(private apiService: ApiService) {
+  constructor(
+    private apiService: ApiService,
+     private navCtrl: NavController
+    ) {
     this.loadUser();
   }
 
@@ -50,12 +55,17 @@ async login(email: string, password: string): Promise<void> {
 
     // Guardar token
     localStorage.setItem('auth_token', response.token);
-    // Guardar role (para que el guard no te saque en F5)
-    const roles: string[] = response.user?.roles ?? [];
-    const primaryRole = roles[0] ?? null;
-    const normalizedRole = this.normalizeRole(primaryRole) ?? 'user';
-    localStorage.setItem(this.ROLE_KEY, normalizedRole);
-        // Guardar usuario con su lista de clientes
+    // Guardar rol primario normalizado para guards
+const roles: string[] = response.user?.roles ?? [];
+const roleRaw = roles[0] ?? null;
+const roleNormalized = roleRaw
+  ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')
+  : 'cliente';
+
+localStorage.setItem('auth_role', roleNormalized);
+
+    
+    // Guardar usuario con su lista de clientes
     this.user.set({
       id: response.user.id,
       name: response.user.name,
@@ -97,6 +107,27 @@ async login(email: string, password: string): Promise<void> {
     // Guardar en localStorage
     localStorage.setItem('user', JSON.stringify(this.user()));
     
+    const me: any = await firstValueFrom(this.apiService.me());
+  this.user.set({
+      ...(this.user() ?? {}),
+      id: me.id,
+      name: me.name,
+      email: me.email,
+      phone: me.phone,
+      roles: me.roles,
+      permissions: me.permissions,
+      clientes: me.clientes,
+      client_id: me.client_id ?? null,
+      clientId: me.clientId ?? null,
+      client_name: me.client_name ?? null,
+      clientName: me.clientName ?? null,
+
+      // 🔥 claves para tu caso
+      obras: me.obras ?? [],
+      obra_ids: (me.obra_ids ?? []).map((x: any) => Number(x)),
+    });
+        localStorage.setItem('user', JSON.stringify(this.user()));
+
   } catch (error: any) {
     console.error('Login error:', error);
     throw new Error(error.error?.message || 'Error al iniciar sesión');
@@ -110,8 +141,13 @@ async login(email: string, password: string): Promise<void> {
     } finally {
       // Limpiar todo
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_role'); // importante
       localStorage.removeItem('user');
+
       this.user.set(null);
+
+      // REDIRECCIÓN CLAVE
+      await this.navCtrl.navigateRoot('/login');
     }
   }
 async loadUser(): Promise<void> {

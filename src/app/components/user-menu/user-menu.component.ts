@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonAvatar, IonButton, IonIcon, IonItem, IonLabel, IonList, IonPopover } from '@ionic/angular/standalone';
+import { IonAvatar, IonButton,   IonLabel,  } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-menu',
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon, IonPopover, IonList, IonItem, IonLabel, IonAvatar],
+  imports: [CommonModule, IonButton,     IonLabel, IonAvatar],
   templateUrl: './user-menu.component.html',
   styleUrls: ['./user-menu.component.scss']
 })

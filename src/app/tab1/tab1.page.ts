@@ -5,7 +5,7 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonContent,
+  IonContent,IonRefresher,IonRefresherContent,
   IonButton,
   IonIcon,
   IonSearchbar,
@@ -36,7 +36,7 @@ type Cliente = {
     IonIcon,
     IonSearchbar,
     IonSpinner,
-    UserMenuComponent
+    UserMenuComponent,IonRefresher,IonRefresherContent
   ],
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss']
@@ -101,6 +101,7 @@ async loadClientes() {
   this.loading = true;
   this.error = '';
 
+<<<<<<< HEAD
   try {
     const response = await firstValueFrom(this.apiService.getClientes());
     console.log('Clientes recibidos:', response);
@@ -111,6 +112,21 @@ async loadClientes() {
     console.error('Error loading clientes:', err);
   } finally {
     this.loading = false;
+=======
+  async loadClientes() {
+    this.loading = true;
+    this.error = '';
+
+    try {
+      const response = await this.apiService.getClientes().toPromise();
+      this.clientes = response.data;
+    } catch (err: any) {
+      this.error = 'Error al cargar clientes';
+      console.error('Error loading clientes:', err);
+    } finally {
+      this.loading = false;
+    }
+>>>>>>> origin/fix/pantalla-negra
   }
 }
   get filteredClientes() {
@@ -132,4 +148,10 @@ async loadClientes() {
     console.log('Navegando a obras del cliente:', clienteId);
     this.router.navigate(['/tabs/tab1/obras', clienteId]);
   }
+ doRefresh(event: any) {
+  this.loadClientes();        // tu función existente
+  event.target.complete();    // cerrar el refresher
+}
+
+
 }

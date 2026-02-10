@@ -1,0 +1,218 @@
+[1mdiff --cc src/app/core/services/auth.service.ts[m
+[1mindex 46bd786,817853e..0000000[m
+[1m--- a/src/app/core/services/auth.service.ts[m
+[1m+++ b/src/app/core/services/auth.service.ts[m
+[36m@@@ -19,9 -21,18 +21,22 @@@[m [mexport type User = [m
+    clientId?: number | null;[m
+    client_name?: string | null;[m
+    clientName?: string | null;[m
+[32m++<<<<<<< HEAD[m
+[32m +  [m
+[32m++=======[m
+[32m+    obras?: Array<{[m
+[32m+     id: number;[m
+[32m+     client_id: number;[m
+[32m+     name?: string;[m
+[32m+     code?: string;[m
+[32m+     status?: string;[m
+[32m+     role?: string | null;[m
+[32m+   }>;[m
+[32m+   obra_ids?: number[];[m
+[32m++>>>>>>> origin/fix/pantalla-negra[m
+  };[m
+  [m
+[32m+ [m
+  @Injectable({[m
+    providedIn: 'root'[m
+  })[m
+[36m@@@ -29,16 -40,10 +44,23 @@@[m [mexport class AuthService [m
+    user = signal<User | null>(null);[m
+    obrasCliente = signal<Obra[] | null>(null);[m
+   [m
+[32m++<<<<<<< HEAD[m
+[32m + private readonly TOKEN_KEY = 'auth_token';[m
+[32m + private readonly USER_KEY = 'user';[m
+[32m + private readonly ROLE_KEY = 'auth_role';[m
+[32m +[m
+[32m + private normalizeRole(role?: string | null): string | null {[m
+[32m +  if (!role) return null;[m
+[32m +  return String(role).trim().toLowerCase().replace(/[_-]/g, '');[m
+[32m +}[m
+[32m +[m
+[32m +  constructor(private apiService: ApiService) {[m
+[32m++=======[m
+[32m+   constructor([m
+[32m+     private apiService: ApiService,[m
+[32m+      private navCtrl: NavController[m
+[32m+     ) {[m
+[32m++>>>>>>> origin/fix/pantalla-negra[m
+      this.loadUser();[m
+    }[m
+  [m
+[36m@@@ -50,12 -55,17 +72,26 @@@[m [masync login(email: string, password: st[m
+  [m
+      // Guardar token[m
+      localStorage.setItem('auth_token', response.token);[m
+[32m++<<<<<<< HEAD[m
+[32m +    // Guardar role (para que el guard no te saque en F5)[m
+[32m +    const roles: string[] = response.user?.roles ?? [];[m
+[32m +    const primaryRole = roles[0] ?? null;[m
+[32m +    const normalizedRole = this.normalizeRole(primaryRole) ?? 'user';[m
+[32m +    localStorage.setItem(this.ROLE_KEY, normalizedRole);[m
+[32m +        // Guardar usuario con su lista de clientes[m
+[32m++=======[m
+[32m+     // Guardar rol primario normalizado para guards[m
+[32m+ const roles: string[] = response.user?.roles ?? [];[m
+[32m+ const roleRaw = roles[0] ?? null;[m
+[32m+ const roleNormalized = roleRaw[m
+[32m+   ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')[m
+[32m+   : 'cliente';[m
+[32m+ [m
+[32m+ localStorage.setItem('auth_role', roleNormalized);[m
+[32m+ [m
+[32m+     [m
+[32m+     // Guardar usuario con su lista de clientes[m
+[32m++>>>>>>> origin/fix/pantalla-negra[m
+      this.user.set({[m
+        id: response.user.id,[m
+        name: response.user.name,[m
+[36m@@@ -110,80 -141,67 +167,134 @@@[m
+      } finally {[m
+        // Limpiar todo[m
+        localStorage.removeItem('auth_token');[m
+[32m+       localStorage.removeItem('auth_role'); // importante[m
+        localStorage.removeItem('user');[m
+[32m+ [m
+        this.user.set(null);[m
+[32m+ [m
+[32m+       // REDIRECCIÓN CLAVE[m
+[32m+       await this.navCtrl.navigateRoot('/login');[m
+      }[m
+    }[m
+[32m +async loadUser(): Promise<void> {[m
+[32m +  const token = localStorage.getItem('auth_token');[m
+[32m +  const savedUser = localStorage.getItem('user');[m
+[32m +[m
+[32m +  if (!token || !savedUser) return;[m
+  [m
+[31m -  async loadUser(): Promise<void> {[m
+[31m -    const token = localStorage.getItem('auth_token');[m
+[31m -    const savedUser = localStorage.getItem('user');[m
+[32m++<<<<<<< HEAD[m
+[32m +  // 1) Cargar desde storage[m
+[32m +  try {[m
+[32m +    const u = JSON.parse(savedUser);[m
+[32m +    this.user.set(u);[m
+  [m
+[32m +    // reconstruir auth_role si falta[m
+[32m +    if (!localStorage.getItem('auth_role')) {[m
+[32m +      const roles: string[] = u?.roles ?? [];[m
+[32m +      const primary = roles[0] ?? 'user';[m
+[32m +      const normalized = String(primary).trim().toLowerCase().replace(/[_-]/g, '');[m
+[32m +      localStorage.setItem('auth_role', normalized);[m
+[32m++=======[m
+[32m+     if (token && savedUser) {[m
+[32m+       try {[m
+[32m+         this.user.set(JSON.parse(savedUser));[m
+[32m+         [m
+[32m+         // Verificar token con el backend[m
+[32m+      const response: any = await firstValueFrom(this.apiService.me());[m
+[32m+ [m
+[32m+ // response es plano (no response.user)[m
+[32m+ this.user.set({[m
+[32m+   ...(this.user() ?? {}),[m
+[32m+   id: response.id,[m
+[32m+   name: response.name,[m
+[32m+   email: response.email,[m
+[32m+   phone:response.phone,[m
+[32m+   roles: response.roles,[m
+[32m+   permissions: response.permissions,[m
+[32m+   clientes: response.clientes,[m
+[32m+   client_id: response.client_id ?? null,[m
+[32m+   clientId: response.clientId ?? null,[m
+[32m+   client_name: response.client_name ?? null,[m
+[32m+   clientName: response.clientName ?? null,[m
+[32m+ });[m
+[32m+ [m
+[32m+ localStorage.setItem('user', JSON.stringify(this.user()));[m
+[32m+       } catch (error) {[m
+[32m+         console.error('Token inválido, limpiando sesión');[m
+[32m+         this.logout();[m
+[32m+       }[m
+[32m++>>>>>>> origin/fix/pantalla-negra[m
+      }[m
+[32m +  } catch {[m
+[32m +    // storage corrupto => logout[m
+[32m +    await this.logout();[m
+[32m +    return;[m
+    }[m
+  [m
+[31m -  isAuthenticated(): boolean {[m
+[31m -    return !!this.user();[m
+[32m +  // 2) Verificar con backend (pero NO mates sesión por cualquier falla)[m
+[32m +  try {[m
+[32m +    const res: any = await firstValueFrom(this.apiService.me());[m
+[32m +[m
+[32m +    // Soporta ambos formatos:[m
+[32m +    // A) { user: {...} }[m
+[32m +    // B) { id, name, email, roles, permissions, ... }[m
+[32m +    const fresh = res?.user ?? res;[m
+[32m +[m
+[32m +    if (!fresh || fresh.id == null) {[m
+[32m +      // respuesta rara, no tiramos sesión, solo avisamos[m
+[32m +      console.warn('[AUTH] /me sin payload válido:', res);[m
+[32m +      return;[m
+[32m +    }[m
+[32m +[m
+[32m +    this.user.set({[m
+[32m +      ...(this.user() ?? {}),[m
+[32m +      id: fresh.id,[m
+[32m +      name: fresh.name,[m
+[32m +      email: fresh.email,[m
+[32m +      roles: fresh.roles ?? this.user()?.roles,[m
+[32m +      permissions: fresh.permissions ?? this.user()?.permissions,[m
+[32m +    });[m
+[32m +[m
+[32m +    localStorage.setItem('user', JSON.stringify(this.user()));[m
+[32m +[m
+[32m +    // asegurar auth_role actualizado[m
+[32m +    const roles: string[] = (fresh.roles ?? this.user()?.roles ?? []);[m
+[32m +    const primary = roles[0] ?? localStorage.getItem('auth_role') ?? 'user';[m
+[32m +    const normalized = String(primary).trim().toLowerCase().replace(/[_-]/g, '');[m
+[32m +    localStorage.setItem('auth_role', normalized);[m
+[32m +[m
+[32m +  } catch (error: any) {[m
+[32m +    const status = error?.status;[m
+[32m +[m
+[32m +    // SOLO limpiar sesión si realmente no está autenticado[m
+[32m +    if (status === 401 || status === 419) {[m
+[32m +      console.warn('[AUTH] Token inválido (401/419), cerrando sesión');[m
+[32m +      await this.logout();[m
+[32m +      return;[m
+[32m +    }[m
+[32m +[m
+[32m +    // Errores de red / backend caído / timeout: NO logout[m
+[32m +    console.warn('[AUTH] No se pudo validar /me (conservamos sesión):', error);[m
+    }[m
+[32m++<<<<<<< HEAD[m
+[32m +}[m
+[32m +[m
+[32m +  [m
+[32m++=======[m
+[32m+   private normalizeRole(role?: string | null): string | null {[m
+[32m+   if (!role) return null;[m
+[32m+   return String(role).trim().toLowerCase().replace(/[_-]/g, '');[m
+[32m+ }[m
+[32m+ [m
+[32m+ isSuperAdminByRoles(roles?: string[] | null): boolean {[m
+[32m+   if (!roles || roles.length === 0) return false;[m
+[32m+   return roles.some(r => this.normalizeRole(r) === 'superadmin');[m
+[32m+ }[m
+[32m+ [m
+[32m+ getRedirectUrl(): string {[m
+[32m+   const roles = this.user()?.roles ?? [];[m
+[32m+   return this.isSuperAdminByRoles(roles) ? '/tabs/tab1' : '/usuario/obras';[m
+[32m+ }[m
+[32m+ [m
+[32m++>>>>>>> origin/fix/pantalla-negra[m
+  }[m
