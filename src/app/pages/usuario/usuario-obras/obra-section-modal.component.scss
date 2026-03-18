@@ -175,6 +175,7 @@
 .person-content {
   flex: 1;
   min-width: 0; /* Permite truncamiento si es necesario */
+    --padding-bottom: 32px;
 }
 
 .person-actions {
@@ -207,3 +208,6 @@
   font-size: 20px;
 }
 
+.section-stack {
+  padding-bottom: 32px;
+}

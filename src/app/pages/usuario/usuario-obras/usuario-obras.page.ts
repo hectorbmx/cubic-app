@@ -204,16 +204,17 @@ async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' 
     return;
   }
 
-  // 2) Abrir modal de sección
-  const modal = await this.modalCtrl.create({
-    component: ObraSectionModalComponent,
-    breakpoints: [0, 0.5, 0.9],
-    initialBreakpoint: 0.9,
-    componentProps: {
-      obraId,
-      section
-    }
-  });
+const modal = await this.modalCtrl.create({
+  component: ObraSectionModalComponent,
+  cssClass: 'obra-fullscreen-modal',
+  breakpoints: [1],
+  initialBreakpoint: 1,
+  handle: false,
+  componentProps: {
+    obraId,
+    section
+  }
+});
 
   await modal.present();
 }
