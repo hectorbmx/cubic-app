@@ -1,19 +1,18 @@
 <ion-content [fullscreen]="true" class="register-bg">
   <div class="container">
     <!-- Logo -->
-    <div class="logo-section">
-      <div class="logo-card">
-        <img src="assets/logo.png" alt="Cubic33 México" class="logo">
-      </div>
+   <div class="logo-section">
+      <img src="assets/logoGroup.png" alt="Cubic33 Group" class="logo">
+      <!-- <p class="welcome-subtitle">Ingresa tus credenciales para ingresar</p> -->
     </div>
 
     <!-- Formulario de Registro -->
     <div class="register-form">
-      <h2 class="form-title">Crear Cuenta</h2>
-      <p class="form-subtitle">Completa tu registro para comenzar</p>
+      <h2 class="form-title">Create new Account</h2>
+      <p class="form-subtitle">Complete your registration to get started</p>
 
       <div class="field">
-        <label>Correo Electrónico</label>
+        <label>Email</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="mail-outline" slot="start"></ion-icon>
           <ion-input 
@@ -25,7 +24,7 @@
       </div>
 
       <div class="field">
-        <label>Contraseña</label>
+        <label>Password</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input 
@@ -37,24 +36,24 @@
       </div>
 
       <div class="field">
-        <label>Confirmar Contraseña</label>
+        <label>Password Confirm</label>
         <ion-item lines="none" class="input-item">
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input 
             type="password" 
             [(ngModel)]="passwordConfirm" 
-            placeholder="Repite tu contraseña">
+            placeholder="Repeat your password">
           </ion-input>
         </ion-item>
       </div>
 
       <ion-button expand="block" class="primary-btn" [disabled]="loading" (click)="register()">
-        {{ loading ? 'Registrando…' : 'Registrarse' }}
+        {{ loading ? 'Signing up...' : 'Sign up' }}
       </ion-button>
 
       <div class="foot">
-        <span>¿Ya tienes cuenta?</span> 
-        <a class="link" (click)="goToLogin()">Inicia sesión</a>
+        <span>Already have an account?</span> 
+        <a class="link" (click)="goToLogin()">Log in</a>
       </div>
 
       <ion-text color="danger" class="error-message" *ngIf="error">

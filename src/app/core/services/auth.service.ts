@@ -201,7 +201,8 @@ isSuperAdminByRoles(roles?: string[] | null): boolean {
 
 getRedirectUrl(): string {
   const roles = this.user()?.roles ?? [];
-  return this.isSuperAdminByRoles(roles) ? '/tabs/tab1' : '/usuario/obras';
+  // return this.isSuperAdminByRoles(roles) ? '/tabs/tab1' : '/usuario/obras';
+  return this.isSuperAdminByRoles(roles) ? '/usuario/obras' : '/usuario/obras';
 }
 
 }
