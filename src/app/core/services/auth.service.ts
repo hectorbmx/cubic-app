@@ -55,16 +55,19 @@ async login(email: string, password: string): Promise<void> {
 
     // Guardar token
     localStorage.setItem('auth_token', response.token);
+
+    // Guardar último correo usado para autocompletar login
+    localStorage.setItem('last_email', email);
+
     // Guardar rol primario normalizado para guards
-const roles: string[] = response.user?.roles ?? [];
-const roleRaw = roles[0] ?? null;
-const roleNormalized = roleRaw
-  ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')
-  : 'cliente';
+    const roles: string[] = response.user?.roles ?? [];
+    const roleRaw = roles[0] ?? null;
+    const roleNormalized = roleRaw
+      ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')
+      : 'cliente';
 
-localStorage.setItem('auth_role', roleNormalized);
+    localStorage.setItem('auth_role', roleNormalized);
 
-    
     // Guardar usuario con su lista de clientes
     this.user.set({
       id: response.user.id,
@@ -78,13 +81,10 @@ localStorage.setItem('auth_role', roleNormalized);
       client_name: response.user.client_name,
       clientName: response.user.clientName,
     });
-    
-    // Si tiene clientes, establecer el primero como activo
-    // const firstClient = response.user.clientes?.[0];
+
     const firstClient: { id: number; name: string } | undefined = response.user.clientes?.[0];
 
     if (firstClient) {
-      // actualiza el usuario guardado para reflejar el cliente activo
       const current = this.user() ?? {
         id: response.user.id,
         name: response.user.name,
@@ -93,6 +93,7 @@ localStorage.setItem('auth_role', roleNormalized);
         permissions: response.user.permissions,
         clientes: response.user.clientes || [],
       };
+
       this.user.set({
         ...current,
         client_id: firstClient.id,
@@ -101,14 +102,12 @@ localStorage.setItem('auth_role', roleNormalized);
         clientName: firstClient.name,
       });
     }
-    
-    // await this.preloadClientObras();
-    
-    // Guardar en localStorage
+
     localStorage.setItem('user', JSON.stringify(this.user()));
-    
+
     const me: any = await firstValueFrom(this.apiService.me());
-  this.user.set({
+
+    this.user.set({
       ...(this.user() ?? {}),
       id: me.id,
       name: me.name,
@@ -121,12 +120,11 @@ localStorage.setItem('auth_role', roleNormalized);
       clientId: me.clientId ?? null,
       client_name: me.client_name ?? null,
       clientName: me.clientName ?? null,
-
-      // 🔥 claves para tu caso
       obras: me.obras ?? [],
       obra_ids: (me.obra_ids ?? []).map((x: any) => Number(x)),
     });
-        localStorage.setItem('user', JSON.stringify(this.user()));
+
+    localStorage.setItem('user', JSON.stringify(this.user()));
 
   } catch (error: any) {
     console.error('Login error:', error);
@@ -151,41 +149,81 @@ localStorage.setItem('auth_role', roleNormalized);
     }
   }
 
-  async loadUser(): Promise<void> {
-    const token = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('user');
+//   async loadUser(): Promise<void> {
+//     const token = localStorage.getItem('auth_token');
+//     const savedUser = localStorage.getItem('user');
 
-    if (token && savedUser) {
-      try {
-        this.user.set(JSON.parse(savedUser));
+//     if (token && savedUser) {
+//       try {
+//         this.user.set(JSON.parse(savedUser));
         
-        // Verificar token con el backend
-     const response: any = await firstValueFrom(this.apiService.me());
+//         // Verificar token con el backend
+//      const response: any = await firstValueFrom(this.apiService.me());
 
-// response es plano (no response.user)
-this.user.set({
-  ...(this.user() ?? {}),
-  id: response.id,
-  name: response.name,
-  email: response.email,
-  phone:response.phone,
-  roles: response.roles,
-  permissions: response.permissions,
-  clientes: response.clientes,
-  client_id: response.client_id ?? null,
-  clientId: response.clientId ?? null,
-  client_name: response.client_name ?? null,
-  clientName: response.clientName ?? null,
-});
+// // response es plano (no response.user)
+// this.user.set({
+//   ...(this.user() ?? {}),
+//   id: response.id,
+//   name: response.name,
+//   email: response.email,
+//   phone:response.phone,
+//   roles: response.roles,
+//   permissions: response.permissions,
+//   clientes: response.clientes,
+//   client_id: response.client_id ?? null,
+//   clientId: response.clientId ?? null,
+//   client_name: response.client_name ?? null,
+//   clientName: response.clientName ?? null,
+// });
 
-localStorage.setItem('user', JSON.stringify(this.user()));
-      } catch (error) {
-        console.error('Token inválido, limpiando sesión');
-        this.logout();
-      }
-    }
+// localStorage.setItem('user', JSON.stringify(this.user()));
+//       } catch (error) {
+//         console.error('Token inválido, limpiando sesión');
+//         this.logout();
+//       }
+//     }
+//   }
+async loadUser(): Promise<boolean> {
+  const token = localStorage.getItem('auth_token');
+  const savedUser = localStorage.getItem('user');
+
+  if (!token || !savedUser) {
+    return false;
   }
 
+  try {
+    this.user.set(JSON.parse(savedUser));
+
+    const response: any = await firstValueFrom(this.apiService.me());
+
+    this.user.set({
+      ...(this.user() ?? {}),
+      id: response.id,
+      name: response.name,
+      email: response.email,
+      phone: response.phone,
+      roles: response.roles,
+      permissions: response.permissions,
+      clientes: response.clientes,
+      client_id: response.client_id ?? null,
+      clientId: response.clientId ?? null,
+      client_name: response.client_name ?? null,
+      clientName: response.clientName ?? null,
+      obras: response.obras ?? [],
+      obra_ids: (response.obra_ids ?? []).map((x: any) => Number(x)),
+    });
+
+    localStorage.setItem('user', JSON.stringify(this.user()));
+    return true;
+  } catch (error) {
+    console.error('Token inválido, limpiando sesión', error);
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_role');
+    localStorage.removeItem('user');
+    this.user.set(null);
+    return false;
+  }
+}
   isAuthenticated(): boolean {
     return !!this.user();
   }

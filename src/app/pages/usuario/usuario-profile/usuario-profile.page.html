@@ -29,15 +29,20 @@
           <span class="meta-value">{{ me?.roles?.[0] || '—' }}</span>
         </div>
 
-        <div class="meta-item" *ngIf="me?.clientName">
-          <span class="meta-label">Cliente</span>
-          <span class="meta-value">{{ me?.clientName }}</span>
-        </div>
+        <div class="meta-item">
+  <span class="meta-label">Clientes</span>
+  <span class="meta-value">{{ me?.clientes?.length || 0 }}</span>
+</div>
+
+<div class="meta-item">
+  <span class="meta-label">Obras</span>
+  <span class="meta-value">{{ me?.obras?.length || 0 }}</span>
+</div>
       </div>
     </div>
   </div>
 
-  <!-- Secciones -->
+  <!-- Permissions -->
   <div class="section">
     <h3 class="section-title">Permissions</h3>
     <div class="chips">
@@ -46,13 +51,48 @@
     </div>
   </div>
 
-  <div class="section" *ngIf="(me?.clientes?.length || 0) > 0">
+  <!-- Clientes -->
+  <div class="section">
     <h3 class="section-title">Clients</h3>
-    <div class="list">
+
+    <div class="list" *ngIf="(me?.clientes?.length || 0) > 0; else noClientes">
       <div class="list-item" *ngFor="let c of me?.clientes">
         <div class="li-title">{{ c.name }}</div>
-        <div class="li-sub">{{ c.email }}</div>
+        <div class="li-sub">{{ c.email || 'Sin correo' }}</div>
       </div>
     </div>
+
+    <ng-template #noClientes>
+      <div class="empty">No assigned clients</div>
+    </ng-template>
+  </div>
+
+  <!-- Obras asignadas -->
+  <div class="section">
+    <h3 class="section-title">Assigned Works</h3>
+
+    <div class="list" *ngIf="(me?.obras?.length || 0) > 0; else noObras">
+      <div class="list-item" *ngFor="let obra of me?.obras">
+        <div class="li-title">
+          {{ obra.name || 'Untitled work' }}
+        </div>
+
+        <div class="li-sub">
+          <span *ngIf="obra.code">Code: {{ obra.code }}</span>
+          <span *ngIf="obra.status">
+            <ng-container *ngIf="obra.code"> · </ng-container>
+            Status: {{ obra.status }}
+          </span>
+        </div>
+
+        <div class="li-extra" *ngIf="obra.role">
+          Role: {{ obra.role }}
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noObras>
+      <div class="empty">No assigned works</div>
+    </ng-template>
   </div>
 </ion-content>

@@ -25,27 +25,31 @@
 
     />
   </div>
-  <!-- Selector de Obra - SELECT NATIVO -->
-  <div class="obra-selector-wrapper">
-    <select 
-      *ngIf="obras.length > 0"
-      class="native-select"
-      [(ngModel)]="obraIdSeleccionada"
-      (change)="onObraChange()"
+      <!-- Selector de Obra - SELECT NATIVO -->
+<div class="obra-selector-wrapper">
+  <select
+    *ngIf="!isLoading && obras.length > 0"
+    class="native-select"
+    [(ngModel)]="obraIdSeleccionada"
+    (change)="onObraChange()"
+  >
+    <option [ngValue]="null" disabled>Select work</option>
+    <option
+      *ngFor="let obra of obras; trackBy: trackByFn"
+      [ngValue]="obra.id"
     >
-      <option [value]="null" disabled>Select work</option>
-      <option 
-        *ngFor="let obra of obras; trackBy: trackByFn" 
-        [value]="obra.id"
-      >
-        {{ obra.name || obra.nombre || ('Obra #' + obra.id) }}
-      </option>
-    </select>
+      {{ obra.name || obra.nombre || ('Obra #' + obra.id) }}
+    </option>
+  </select>
 
-    <div *ngIf="obras.length === 0" class="loading-text">
-      Loading works...
-    </div>
+  <div *ngIf="isLoading" class="loading-text">
+    Loading works...
   </div>
+
+  <div *ngIf="!isLoading && obras.length === 0" class="loading-text">
+    No hay obras asignadas
+  </div>
+</div>
 
   <!-- Grid de Opciones -->
 <!-- Grid de Opciones -->

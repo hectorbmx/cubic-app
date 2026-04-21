@@ -51,83 +51,96 @@ export class UserRegisterPage {
   }
 
   async register() {
-    // Validaciones básicas
-    if (!this.email || !this.password || !this.passwordConfirm) {
-      this.showToast('Por favor completa todos los campos', 'warning');
-      return;
-    }
-
-    if (this.password !== this.passwordConfirm) {
-      this.showToast('Las contraseñas no coinciden', 'warning');
-      return;
-    }
-
-    if (this.password.length < 8) {
-      this.showToast('La contraseña debe tener al menos 8 caracteres', 'warning');
-      return;
-    }
-
-    const loading = await this.loadingCtrl.create({
-      message: 'Verificando invitación...',
-    });
-    await loading.present();
-
-    this.loading = true;
-    this.error = '';
-
-    try {
-      const response = await this.apiService.register(
-        this.email,
-        this.password,
-        this.passwordConfirm
-      ).toPromise();
-
-      await loading.dismiss();
-      
-      // Guardar token automáticamente
-      localStorage.setItem('auth_token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      // Mostrar alerta de éxito
-      this.showSuccessAlert(response.token);
-      
-    } catch (err: any) {
-      await loading.dismiss();
-      const errorMsg = err.error?.message || 'Error al registrarse';
-      this.error = errorMsg;
-      this.showToast(errorMsg, 'danger');
-    } finally {
-      this.loading = false;
-    }
+  if (!this.email || !this.password || !this.passwordConfirm) {
+    this.showToast('Please complete all fields', 'warning');
+    return;
   }
 
-  async showSuccessAlert(token: string) {
-    const alert = await this.alertCtrl.create({
-      header: '¡Registro exitoso!',
-      message: '¿Deseas iniciar sesión ahora?',
-      buttons: [
-        {
-          text: 'Después',
-          role: 'cancel',
-          handler: () => {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            this.router.navigateByUrl('/login');
-          }
-        },
-        {
-          text: 'Iniciar sesión',
-          handler: async () => {
-            // Auto-login: el token ya está guardado
-            await this.authService.loadUser();
-            this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+  if (this.password !== this.passwordConfirm) {
+    this.showToast('Passwords do not match', 'warning');
+    return;
+  }
+
+  if (this.password.length < 8) {
+    this.showToast('Password must be at least 8 characters long', 'warning');
+    return;
+  }
+
+  const loading = await this.loadingCtrl.create({
+    message: 'Verifying invitation...',
+  });
+  await loading.present();
+
+  this.loading = true;
+  this.error = '';
+
+  try {
+    const response = await this.apiService.register(
+      this.email,
+      this.password,
+      this.passwordConfirm
+    ).toPromise();
+
+    await loading.dismiss();
+
+    localStorage.setItem('auth_token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+
+    await this.showSuccessAlert(response.token);
+
+  } catch (err: any) {
+    await loading.dismiss();
+    const errorMsg = err.error?.message || 'Registration error';
+    this.error = errorMsg;
+    this.showToast(errorMsg, 'danger');
+  } finally {
+    this.loading = false;
+  }
+}
+ async showSuccessAlert(token: string) {
+  const alert = await this.alertCtrl.create({
+    header: 'Registration successful!',
+    message: 'Do you want to log in now?',
+    buttons: [
+      {
+        text: 'Later',
+        role: 'cancel',
+        handler: () => {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          this.router.navigateByUrl('/login', { replaceUrl: true });
+        }
+      },
+      {
+        text: 'Log in now',
+        handler: async () => {
+          try {
+            // ⚠️ Asegurar que el token esté (por si acaso)
+            localStorage.setItem('auth_token', token);
+
+            // Ejecutar loadUser y validar resultado
+            const ok = await this.authService.loadUser();
+
+            if (ok) {
+              this.router.navigateByUrl('/usuario/obras', { replaceUrl: true });
+            } else {
+              console.error('Auto-login falló');
+              this.showToast('Could not start session automatically', 'danger');
+              this.router.navigateByUrl('/login', { replaceUrl: true });
+            }
+
+          } catch (error) {
+            console.error('Error en auto-login:', error);
+            this.showToast('Unexpected error during login', 'danger');
+            this.router.navigateByUrl('/login', { replaceUrl: true });
           }
         }
-      ]
-    });
+      }
+    ]
+  });
 
-    await alert.present();
-  }
+  await alert.present();
+}
 
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({

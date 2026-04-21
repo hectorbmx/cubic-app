@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Browser } from '@capacitor/browser';
 import {
   IonContent,
   IonHeader,IonIcon,
@@ -12,6 +13,8 @@ import {
   IonList,
   IonItem,
   IonLabel,
+    IonModal,
+
   ModalController
 } from '@ionic/angular/standalone';
 
@@ -22,12 +25,20 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
 @Component({
   selector: 'app-obra-section-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,IonIcon,
-    IonContent,
-    IonList, IonItem, IonLabel
-  ],
+imports: [
+  CommonModule,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonModal
+],
   template: `
   <ion-header class="custom-header">
     <ion-toolbar class="custom-toolbar">
@@ -175,7 +186,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noTimeline>
-    <div class="empty-state">Sin eventos registrados.</div>
+    <div class="empty-state">No events registered.</div>
   </ng-template>
 </ng-container>
 
@@ -185,24 +196,71 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   <div class="camaras-grid" *ngIf="(obra?.camaras?.length ?? 0) > 0; else noCamaras">
 
     <div class="camara-card" *ngFor="let cam of obra.camaras">
-     <div class="camara-preview">
-  <iframe 
-    [src]="getSafeUrl(cam.url)" 
-    width="100%" 
-    height="200" 
-    frameborder="0" 
-    allowfullscreen>
-  </iframe>
-</div>
+
+      <!-- PREVIEW FOTO -->
+      <div
+        class="camara-preview camara-photo-preview"
+        *ngIf="cam.has_photo && cam.photo_url"
+        (click)="openPhotoPreview(cam)"
+      >
+        <img
+          [src]="cam.photo_url"
+          [alt]="cam.nombre ?? 'Foto de cámara'"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- PREVIEW LIVE -->
+      <div
+        class="camara-preview live-preview"
+        *ngIf="cam.has_live && cam.url"
+        (click)="openLiveCamera(cam)"
+      >
+        <div class="live-placeholder">
+          <ion-icon name="videocam-outline"></ion-icon>
+          <span>Ver cámara en vivo</span>
+        </div>
+      </div>
 
       <div class="camara-info">
         <div class="camara-name">{{ cam.nombre ?? 'Cámara' }}</div>
+
         <div class="camara-location">
-          {{ cam.ubicacion ?? 'Ubicación no definida' }}
+          {{ cam.ubicacion ?? 'Location not defined' }}
+        </div>
+
+        <div class="camara-meta" *ngIf="cam.photo_taken_at">
+          Foto: {{ cam.photo_taken_at | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+
+        <div class="camara-meta" *ngIf="cam.photo_notes">
+          {{ cam.photo_notes }}
         </div>
 
         <div class="camara-status" [class.on]="cam.activa">
           {{ cam.activa ? 'Activa' : 'Inactiva' }}
+        </div>
+
+        <div class="camara-actions">
+          <ion-button
+            size="small"
+            fill="solid"
+            *ngIf="cam.has_live"
+            (click)="openLiveCamera(cam)"
+          >
+            <ion-icon name="videocam-outline" slot="start"></ion-icon>
+            Live
+          </ion-button>
+
+          <ion-button
+            size="small"
+            fill="outline"
+            *ngIf="cam.has_photo"
+            (click)="openPhotoPreview(cam)"
+          >
+            <ion-icon name="image-outline" slot="start"></ion-icon>
+            Foto
+          </ion-button>
         </div>
       </div>
     </div>
@@ -211,11 +269,44 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
 
   <ng-template #noCamaras>
     <div class="empty-state">
-      No hay cámaras registradas para esta obra.
+      No cameras are registered for this project.
     </div>
   </ng-template>
 
 </ng-container>
+
+<!-- MODAL FOTO -->
+<ion-modal [isOpen]="isPhotoModalOpen" (didDismiss)="closePhotoPreview()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ selectedCameraTitle || 'Foto' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closePhotoPreview()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding photo-modal-content">
+      <img
+        *ngIf="selectedPhotoUrl"
+        [src]="selectedPhotoUrl"
+        [alt]="selectedCameraTitle || 'Foto'"
+        class="full-photo"
+      />
+
+      <div class="photo-extra" *ngIf="selectedPhotoTakenAt || selectedPhotoNotes">
+        <div *ngIf="selectedPhotoTakenAt">
+          <strong>Fecha:</strong> {{ selectedPhotoTakenAt | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+
+        <div *ngIf="selectedPhotoNotes">
+          <strong>Notas:</strong> {{ selectedPhotoNotes }}
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 <!-- FOTOS -->
 <ng-container *ngIf="section === 'fotos'">
 
@@ -231,7 +322,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noFotos>
-    <div class="empty-state">No hay fotos registradas para esta obra.</div>
+    <div class="empty-state">There are no photos registered for this site.</div>
   </ng-template>
 
   <!-- Preview -->
@@ -244,7 +335,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
         <div class="photo-date">{{ photoOpen.fecha ?? '—' }}</div>
       </div>
 
-      <button class="photo-close" type="button" (click)="closePhoto()">Cerrar</button>
+      <button class="photo-close" type="button" (click)="closePhoto()">Close</button>
     </div>
   </div>
 </ng-container>
@@ -278,7 +369,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noPlanos>
-    <div class="empty-state">No hay planos registrados para esta obra.</div>
+    <div class="empty-state">No drawings are registered for this project.</div>
   </ng-template>
 
 </ng-container>
@@ -326,7 +417,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noInformes>
-    <div class="empty-state">No hay informes registrados para esta obra.</div>
+    <div class="empty-state">No reports are registered for this project.</div>
   </ng-template>
 
 </ng-container>
@@ -1192,7 +1283,41 @@ photoOpen: any = null;
 openPhoto(f: any) {
   this.photoOpen = f;
 }
+isPhotoModalOpen = false;
+selectedPhotoUrl: string | null = null;
+selectedCameraTitle: string | null = null;
+selectedPhotoTakenAt: string | null = null;
+selectedPhotoNotes: string | null = null;
 
+openPhotoPreview(cam: any): void {
+  if (!cam?.photo_url) return;
+
+  this.selectedPhotoUrl = cam.photo_url;
+  this.selectedCameraTitle = cam.nombre || 'Foto';
+  this.selectedPhotoTakenAt = cam.photo_taken_at || null;
+  this.selectedPhotoNotes = cam.photo_notes || null;
+  this.isPhotoModalOpen = true;
+}
+
+closePhotoPreview(): void {
+  this.isPhotoModalOpen = false;
+  this.selectedPhotoUrl = null;
+  this.selectedCameraTitle = null;
+  this.selectedPhotoTakenAt = null;
+  this.selectedPhotoNotes = null;
+}
+
+async openLiveCamera(cam: any): Promise<void> {
+  if (!cam?.url) return;
+
+  try {
+    await Browser.open({
+      url: cam.url
+    });
+  } catch (error) {
+    console.error('Error abriendo cámara en vivo:', error);
+  }
+}
 closePhoto() {
   this.photoOpen = null;
 }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject,OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +34,7 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
   private loadingCtrl = inject(LoadingController);
@@ -46,7 +46,9 @@ export class LoginPage {
   remember = false;
   loading = false;
   error = '';
-
+ngOnInit(): void {
+  this.email = localStorage.getItem('last_email') || '';
+}
   async submit() {
     if (!this.email || !this.password) {
       this.showToast('Please fill in all the fields.', 'warning');

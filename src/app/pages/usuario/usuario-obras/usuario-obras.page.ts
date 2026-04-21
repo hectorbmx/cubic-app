@@ -1,6 +1,7 @@
 import { Component, OnInit,ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { Router } from '@angular/router';
 import { ApiService } from 'src/app/core/services/api';
 import { ObraSectionModalComponent } from './obra-section-modal.component';
@@ -53,7 +54,8 @@ import {
 })
 export class UsuarioObrasPage implements OnInit {
    @ViewChild('selectObra') selectObra!: IonSelect;
-  obras: any[] = [];
+  isLoading = true;
+   obras: any[] = [];
   obraIdSeleccionada: number | null = null;
 
   constructor(
@@ -66,6 +68,110 @@ export class UsuarioObrasPage implements OnInit {
   }
 
   
+// ngOnInit(): void {
+//   this.modalCtrl.getTop().then(modal => {
+//     if (modal) {
+//       console.log('[OBRAS] Hay un modal abierto, cerrándolo...');
+//       modal.dismiss();
+//     }
+//   });
+
+//   const userRaw = localStorage.getItem('user');
+//   if (!userRaw) {
+//     console.error('[OBRAS] No hay user en storage');
+//     return;
+//   }
+
+//   let user: any = null;
+//   try {
+//     user = JSON.parse(userRaw);
+//   } catch (e) {
+//     console.error('[OBRAS] Error parseando user', e);
+//     return;
+//   }
+
+//   const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+//   const isUserRole = roles.includes('user'); // residente
+
+//   // ✅ SI ES "user": usar SOLO obras asignadas que ya vienen en /me
+//   if (isUserRole) {
+//     const obrasAsignadas = Array.isArray(user?.obras) ? user.obras : [];
+
+//     // Normalizar IDs
+//     this.obras = obrasAsignadas.map((o: any) => ({
+//       ...o,
+//       id: Number(o.id),
+//       client_id: Number(o.client_id),
+//     }));
+
+//     console.log('[OBRAS] Obras asignadas (desde /me):', this.obras);
+
+//     // Selección inicial (misma lógica que ya tenías)
+//     if (this.obras.length > 0) {
+//       const savedId = localStorage.getItem('obra_id');
+
+//       if (savedId) {
+//         const savedIdNum = Number(savedId);
+//         const encontrada = this.obras.find(o => o.id === savedIdNum);
+//         if (encontrada) this.obraIdSeleccionada = savedIdNum;
+//       }
+
+//       if (!this.obraIdSeleccionada) {
+//         this.obraIdSeleccionada = this.obras[0].id;
+//         localStorage.setItem('obra_id', String(this.obras[0].id));
+//       }
+
+//       console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+//     }
+
+//     return; // 👈 importante: no caer al endpoint por cliente
+//   }
+
+//   // ✅ SI NO ES "user" (admin/superadmin): aquí puedes seguir usando el endpoint por cliente si aplica
+//   const clienteId = Number(user.clientId ?? user.client_id ?? null);
+//   if (!clienteId) {
+//     console.error('[OBRAS] No hay cliente_id válido');
+//     return;
+//   }
+
+//   this.apiService.getObrasByCliente(clienteId).subscribe({
+//     next: (res: any) => {
+//       let listaFinal: any[] = [];
+//       if (res?.data && Array.isArray(res.data)) {
+//         listaFinal = res.data;
+//       } else if (Array.isArray(res)) {
+//         listaFinal = res;
+//       } else {
+//         listaFinal = [res];
+//       }
+
+//       this.obras = listaFinal.map((o: any) => ({
+//         ...o,
+//         id: Number(o.id),
+//       }));
+
+//       console.log('[OBRAS] Obras cargadas (por cliente):', this.obras);
+
+//       if (this.obras.length > 0) {
+//         const savedId = localStorage.getItem('obra_id');
+
+//         if (savedId) {
+//           const savedIdNum = Number(savedId);
+//           const encontrada = this.obras.find(o => o.id === savedIdNum);
+//           if (encontrada) this.obraIdSeleccionada = savedIdNum;
+//         }
+
+//         if (!this.obraIdSeleccionada) {
+//           this.obraIdSeleccionada = this.obras[0].id;
+//           localStorage.setItem('obra_id', String(this.obras[0].id));
+//         }
+
+//         console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+//       }
+//     },
+//     error: (err) => console.error('[OBRAS] Error:', err),
+//   });
+// }
 ngOnInit(): void {
   this.modalCtrl.getTop().then(modal => {
     if (modal) {
@@ -77,6 +183,7 @@ ngOnInit(): void {
   const userRaw = localStorage.getItem('user');
   if (!userRaw) {
     console.error('[OBRAS] No hay user en storage');
+    this.isLoading = false;
     return;
   }
 
@@ -85,61 +192,96 @@ ngOnInit(): void {
     user = JSON.parse(userRaw);
   } catch (e) {
     console.error('[OBRAS] Error parseando user', e);
+    this.isLoading = false;
     return;
   }
 
   const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
-  const isUserRole = roles.includes('user'); // residente
+  const isUserRole = roles.includes('user');
 
-  // ✅ SI ES "user": usar SOLO obras asignadas que ya vienen en /me
-  if (isUserRole) {
-    const obrasAsignadas = Array.isArray(user?.obras) ? user.obras : [];
+  // Ajusta estos nombres según tus roles reales
+  const isSuperAdmin =
+    roles.includes('super-admin') ||
+    roles.includes('superAdmin') ||
+    roles.includes('admin');
 
-    // Normalizar IDs
-    this.obras = obrasAsignadas.map((o: any) => ({
+  // 1) SIEMPRE revisar primero las obras que vienen desde /me
+  const obrasDesdeMe = Array.isArray(user?.obras) ? user.obras : [];
+
+  if (obrasDesdeMe.length > 0) {
+    this.obras = obrasDesdeMe.map((o: any) => ({
       ...o,
       id: Number(o.id),
-      client_id: Number(o.client_id),
+      client_id: o.client_id ? Number(o.client_id) : null,
     }));
 
-    console.log('[OBRAS] Obras asignadas (desde /me):', this.obras);
+    console.log('[OBRAS] Obras cargadas desde /me:', this.obras);
 
-    // Selección inicial (misma lógica que ya tenías)
-    if (this.obras.length > 0) {
-      const savedId = localStorage.getItem('obra_id');
-
-      if (savedId) {
-        const savedIdNum = Number(savedId);
-        const encontrada = this.obras.find(o => o.id === savedIdNum);
-        if (encontrada) this.obraIdSeleccionada = savedIdNum;
+    const savedId = localStorage.getItem('obra_id');
+    if (savedId) {
+      const savedIdNum = Number(savedId);
+      const encontrada = this.obras.find(o => o.id === savedIdNum);
+      if (encontrada) {
+        this.obraIdSeleccionada = savedIdNum;
       }
-
-      if (!this.obraIdSeleccionada) {
-        this.obraIdSeleccionada = this.obras[0].id;
-        localStorage.setItem('obra_id', String(this.obras[0].id));
-      }
-
-      console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
     }
 
-    return; // 👈 importante: no caer al endpoint por cliente
+    if (!this.obraIdSeleccionada && this.obras.length > 0) {
+      this.obraIdSeleccionada = this.obras[0].id;
+      localStorage.setItem('obra_id', String(this.obras[0].id));
+    }
+
+    console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+    this.isLoading = false;
+    return;
   }
 
-  // ✅ SI NO ES "user" (admin/superadmin): aquí puedes seguir usando el endpoint por cliente si aplica
-  const clienteId = Number(user.clientId ?? user.client_id ?? null);
+  // 2) Si es usuario normal y NO trae obras asignadas en /me, no debe ver ninguna
+  if (isUserRole) {
+    console.warn('[OBRAS] Usuario con rol "user" sin obras asignadas en /me');
+    this.obras = [];
+    this.obraIdSeleccionada = null;
+    localStorage.removeItem('obra_id');
+    this.isLoading = false;
+    return;
+  }
+
+  // 3) Solo super admin / admin pueden hacer fallback por cliente
+  if (!isSuperAdmin) {
+    console.warn('[OBRAS] Rol sin permiso para consultar obras por cliente');
+    this.obras = [];
+    this.obraIdSeleccionada = null;
+    localStorage.removeItem('obra_id');
+    this.isLoading = false;
+    return;
+  }
+
+  const clienteIdRaw =
+    user?.clientId ??
+    user?.client_id ??
+    user?.cliente_activo_id ??
+    null;
+
+  const clienteId = clienteIdRaw ? Number(clienteIdRaw) : null;
+
   if (!clienteId) {
-    console.error('[OBRAS] No hay cliente_id válido');
+    console.warn('[OBRAS] No hay obras en /me ni cliente_id válido');
+    this.obras = [];
+    this.obraIdSeleccionada = null;
+    localStorage.removeItem('obra_id');
+    this.isLoading = false;
     return;
   }
 
   this.apiService.getObrasByCliente(clienteId).subscribe({
     next: (res: any) => {
       let listaFinal: any[] = [];
+
       if (res?.data && Array.isArray(res.data)) {
         listaFinal = res.data;
       } else if (Array.isArray(res)) {
         listaFinal = res;
-      } else {
+      } else if (res) {
         listaFinal = [res];
       }
 
@@ -148,29 +290,31 @@ ngOnInit(): void {
         id: Number(o.id),
       }));
 
-      console.log('[OBRAS] Obras cargadas (por cliente):', this.obras);
+      console.log('[OBRAS] Obras cargadas por cliente:', this.obras);
 
-      if (this.obras.length > 0) {
-        const savedId = localStorage.getItem('obra_id');
-
-        if (savedId) {
-          const savedIdNum = Number(savedId);
-          const encontrada = this.obras.find(o => o.id === savedIdNum);
-          if (encontrada) this.obraIdSeleccionada = savedIdNum;
+      const savedId = localStorage.getItem('obra_id');
+      if (savedId) {
+        const savedIdNum = Number(savedId);
+        const encontrada = this.obras.find(o => o.id === savedIdNum);
+        if (encontrada) {
+          this.obraIdSeleccionada = savedIdNum;
         }
-
-        if (!this.obraIdSeleccionada) {
-          this.obraIdSeleccionada = this.obras[0].id;
-          localStorage.setItem('obra_id', String(this.obras[0].id));
-        }
-
-        console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
       }
+
+      if (!this.obraIdSeleccionada && this.obras.length > 0) {
+        this.obraIdSeleccionada = this.obras[0].id;
+        localStorage.setItem('obra_id', String(this.obras[0].id));
+      }
+
+      console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+      this.isLoading = false;
     },
-    error: (err) => console.error('[OBRAS] Error:', err),
+    error: (err) => {
+      console.error('[OBRAS] Error:', err);
+      this.isLoading = false;
+    },
   });
 }
-
 
   goBack() {
     this.router.navigate(['/usuario']);
