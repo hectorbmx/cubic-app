@@ -129,8 +129,8 @@ imports: [
 
         <ng-template #noPersonas>
           <div class="info-item">
-            <div class="label">Personas</div>
-            <div class="value">No hay personas registradas</div>
+            <div class="label">People</div>
+            <div class="value">No registered users</div>
           </div>
         </ng-template>
       </div>
@@ -269,6 +269,7 @@ imports: [
 
   <ng-template #noCamaras>
     <div class="empty-state">
+      No registered cameras.
       No cameras are registered for this project.
     </div>
   </ng-template>
