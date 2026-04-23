@@ -169,13 +169,21 @@ imports: [
         </div>
       </div>
     </div>
+<div class="progress-footer" *ngIf="obra?.progreso != null">
 
-   <div class="progress-footer" *ngIf="obra?.progreso !== null && obra?.progreso !== undefined">
+  <!-- TÍTULO -->
+  <div class="progress-title">
+    Progreso de la obra
+  </div>
+
+  <!-- PORCENTAJE -->
   <div class="progress-number">{{ obra.progreso ?? 0 }}%</div>
 
+  <!-- BARRA -->
   <div class="progress-bar">
     <div class="progress-fill" [style.width.%]="obra.progreso ?? 0"></div>
   </div>
+
 </div>
 
   </div>
@@ -628,6 +636,7 @@ imports: [
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.75);
 }
+  
 /* =========================
    CAMARAS
 ========================= */
