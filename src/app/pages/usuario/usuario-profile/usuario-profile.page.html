@@ -28,23 +28,23 @@
           <span class="meta-label">Rol</span>
           <span class="meta-value">{{ me?.roles?.[0] || '—' }}</span>
         </div>
-
+<!-- 
         <div class="meta-item" *ngIf="me?.clientName">
           <span class="meta-label">Cliente</span>
           <span class="meta-value">{{ me?.clientName }}</span>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 
   <!-- Secciones -->
-  <div class="section">
+  <!-- <div class="section">
     <h3 class="section-title">Permissions</h3>
     <div class="chips">
       <span class="chip" *ngFor="let p of (me?.permissions || [])">{{ p }}</span>
       <span class="empty" *ngIf="(me?.permissions?.length || 0) === 0">—</span>
     </div>
-  </div>
+  </div> -->
 
   <div class="section" *ngIf="(me?.clientes?.length || 0) > 0">
     <h3 class="section-title">Clients</h3>
@@ -55,4 +55,26 @@
       </div>
     </div>
   </div>
+  <div class="section" *ngIf="(me?.obras?.length || 0) > 0">
+  <h3 class="section-title">Works</h3>
+
+  <div class="list">
+    <div class="list-item" *ngFor="let o of me?.obras">
+
+      <div class="li-title">
+        {{ o.name }}
+      </div>
+
+      <div class="li-sub">
+        {{ o.code || 'Sin código' }}
+      </div>
+
+      <div class="li-meta" *ngIf="o.status || o.role">
+        <span *ngIf="o.status">Estatus: {{ o.status }}</span>
+        <span *ngIf="o.role"> • Rol: {{ o.role }}</span>
+      </div>
+
+    </div>
+  </div>
+</div>
 </ion-content>

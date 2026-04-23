@@ -55,17 +55,22 @@ async login(email: string, password: string): Promise<void> {
 
     // Guardar token
     localStorage.setItem('auth_token', response.token);
+
+    // Guardar último correo usado para precargar el login aunque haga logout
+    if (email && email.includes('@')) {
+      localStorage.setItem('last_login_email', email.trim());
+    }
+
     // Guardar rol primario normalizado para guards
-const roles: string[] = response.user?.roles ?? [];
-const roleRaw = roles[0] ?? null;
-const roleNormalized = roleRaw
-  ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')
-  : 'cliente';
+    const roles: string[] = response.user?.roles ?? [];
+    const roleRaw = roles[0] ?? null;
+    const roleNormalized = roleRaw
+      ? String(roleRaw).trim().toLowerCase().replace(/[_-]/g, '')
+      : 'cliente';
 
-localStorage.setItem('auth_role', roleNormalized);
+    localStorage.setItem('auth_role', roleNormalized);
 
-    
-    // Guardar usuario con su lista de clientes
+    // Guardar usuario inicial con su lista de clientes
     this.user.set({
       id: response.user.id,
       name: response.user.name,
@@ -73,18 +78,19 @@ localStorage.setItem('auth_role', roleNormalized);
       roles: response.user.roles,
       permissions: response.user.permissions,
       clientes: response.user.clientes || [],
-      client_id: response.user.client_id,
-      clientId: response.user.clientId,
-      client_name: response.user.client_name,
-      clientName: response.user.clientName,
+      client_id: response.user.client_id ?? null,
+      clientId: response.user.clientId ?? null,
+      client_name: response.user.client_name ?? null,
+      clientName: response.user.clientName ?? null,
+      obras: response.user.obras || [],
+      obra_ids: (response.user.obra_ids ?? []).map((x: any) => Number(x)),
     });
-    
+
     // Si tiene clientes, establecer el primero como activo
-    // const firstClient = response.user.clientes?.[0];
-    const firstClient: { id: number; name: string } | undefined = response.user.clientes?.[0];
+    const firstClient: { id: number; name: string } | undefined =
+      response.user.clientes?.[0];
 
     if (firstClient) {
-      // actualiza el usuario guardado para reflejar el cliente activo
       const current = this.user() ?? {
         id: response.user.id,
         name: response.user.name,
@@ -92,7 +98,10 @@ localStorage.setItem('auth_role', roleNormalized);
         roles: response.user.roles,
         permissions: response.user.permissions,
         clientes: response.user.clientes || [],
+        obras: response.user.obras || [],
+        obra_ids: (response.user.obra_ids ?? []).map((x: any) => Number(x)),
       };
+
       this.user.set({
         ...current,
         client_id: firstClient.id,
@@ -101,14 +110,11 @@ localStorage.setItem('auth_role', roleNormalized);
         clientName: firstClient.name,
       });
     }
-    
-    // await this.preloadClientObras();
-    
-    // Guardar en localStorage
+    // Guardar versión inicial en localStorage
     localStorage.setItem('user', JSON.stringify(this.user()));
-    
+    // Refrescar con /me para completar datos reales del usuario
     const me: any = await firstValueFrom(this.apiService.me());
-  this.user.set({
+    this.user.set({
       ...(this.user() ?? {}),
       id: me.id,
       name: me.name,
@@ -116,18 +122,16 @@ localStorage.setItem('auth_role', roleNormalized);
       phone: me.phone,
       roles: me.roles,
       permissions: me.permissions,
-      clientes: me.clientes,
+      clientes: me.clientes ?? [],
       client_id: me.client_id ?? null,
       clientId: me.clientId ?? null,
       client_name: me.client_name ?? null,
       clientName: me.clientName ?? null,
-
-      // 🔥 claves para tu caso
       obras: me.obras ?? [],
       obra_ids: (me.obra_ids ?? []).map((x: any) => Number(x)),
     });
-        localStorage.setItem('user', JSON.stringify(this.user()));
 
+    localStorage.setItem('user', JSON.stringify(this.user()));
   } catch (error: any) {
     console.error('Login error:', error);
     throw new Error(error.error?.message || 'Error al iniciar sesión');

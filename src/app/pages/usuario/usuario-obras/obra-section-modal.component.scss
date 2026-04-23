@@ -211,3 +211,120 @@
 .section-stack {
   padding-bottom: 32px;
 }
+.camaras-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.camara-card {
+  background: linear-gradient(180deg, #0f1b33 0%, #07152a 100%);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.camara-preview {
+  width: 100%;
+  min-height: 200px;
+  background: #1b2436;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.live-preview {
+  height: 220px;
+  padding: 20px;
+}
+
+.live-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: rgba(255, 196, 0, 0.08);
+  border: 1px dashed rgba(255, 196, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #ffc400;
+  font-weight: 600;
+}
+
+.live-placeholder ion-icon {
+  font-size: 42px;
+}
+
+.camara-info {
+  padding: 14px 16px 16px;
+}
+
+.camara-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.camara-location,
+.camara-meta {
+  font-size: 13px;
+  color: #b8c2d3;
+  margin-bottom: 6px;
+}
+
+.camara-status {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ca3af;
+}
+
+.camara-status.on {
+  color: #22c55e;
+}
+
+.camara-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.photo-modal-content {
+  --background: #0f172a;
+}
+
+.full-photo {
+  width: 100%;
+  border-radius: 14px;
+  display: block;
+}
+
+.photo-extra {
+  margin-top: 16px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.camara-photo-preview {
+  background: #0b1a2c;
+  cursor: pointer;
+}
+
+.camara-photo-preview img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}

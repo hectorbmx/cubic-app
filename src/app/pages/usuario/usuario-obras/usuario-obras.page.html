@@ -26,7 +26,7 @@
     />
   </div>
   <!-- Selector de Obra - SELECT NATIVO -->
-  <div class="obra-selector-wrapper">
+  <!-- <div class="obra-selector-wrapper">
     <select 
       *ngIf="obras.length > 0"
       class="native-select"
@@ -45,9 +45,53 @@
     <div *ngIf="obras.length === 0" class="loading-text">
       Loading works...
     </div>
+  </div> -->
+  <div class="obra-selector-wrapper">
+
+  <!-- SELECT CLIENTE -->
+<select
+  *ngIf="(clientes?.length || 0) > 1"
+  class="native-select"
+  [(ngModel)]="clienteIdSeleccionado"
+  (ngModelChange)="onClienteChange()"
+>
+  <option [ngValue]="null" disabled>Selecciona un cliente</option>
+  <option
+    *ngFor="let cliente of clientes; trackBy: trackByCliente"
+    [ngValue]="cliente.id"
+  >
+    {{ cliente.name }}
+  </option>
+</select>
+
+  <!-- SELECT OBRAS -->
+<select
+  *ngIf="obrasFiltradas.length > 0"
+  class="native-select"
+  [(ngModel)]="obraIdSeleccionada"
+  (ngModelChange)="onObraChange()"
+>
+  <option [ngValue]="null" disabled>Selecciona una obra</option>
+  <option
+    *ngFor="let obra of obrasFiltradas; trackBy: trackByFn"
+    [ngValue]="obra.id"
+  >
+    {{ obra.name || obra.nombre || ('Obra #' + obra.id) }}
+  </option>
+</select>
+
+  <!-- MENSAJE CUANDO NO HAY OBRAS -->
+  <div *ngIf="!loadingObras && obras.length > 0 && obrasFiltradas.length === 0" class="loading-text">
+    No hay obras para este cliente.
   </div>
 
-  <!-- Grid de Opciones -->
+  <!-- LOADING -->
+  <div *ngIf="loadingObras && obras.length === 0" class="loading-text">
+    Cargando obras...
+  </div>
+
+</div>
+  
 <!-- Grid de Opciones -->
 <div class="options-grid">
   <div class="option-card" (click)="openSection('info')">

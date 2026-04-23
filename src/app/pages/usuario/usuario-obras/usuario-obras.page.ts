@@ -1,6 +1,7 @@
-import { Component, OnInit,ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { Router } from '@angular/router';
 import { ApiService } from 'src/app/core/services/api';
 import { ObraSectionModalComponent } from './obra-section-modal.component';
@@ -10,27 +11,33 @@ import { Capacitor } from '@capacitor/core';
 import { UserProfileButtonComponent } from 'src/app/components/user-menu/user-profile-button/user-profile-button.component';
 import { firstValueFrom } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar,IonRefresher,IonRefresherContent,
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonRefresher,
+  IonRefresherContent,
   IonButtons,
   IonButton,
   IonIcon,
-  
   IonSelectOption,
   ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  chevronBackOutline, 
+import {
+  chevronBackOutline,
   statsChartOutline,
   calendarOutline,
-  videocamOutline,exitOutline,
+  videocamOutline,
+  exitOutline,
   cameraOutline,
   triangleOutline,
-  documentTextOutline, chevronDownOutline, clipboardOutline, peopleCircleOutline } from 'ionicons/icons';
+  documentTextOutline,
+  chevronDownOutline,
+  clipboardOutline,
+  peopleCircleOutline
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-usuario-obras',
@@ -38,23 +45,34 @@ import {
   styleUrls: ['./usuario-obras.page.scss'],
   standalone: true,
   imports: [
-    IonContent, 
-    IonHeader, 
-    IonTitle, IonRefresher,IonRefresherContent,
-    IonToolbar, UserProfileButtonComponent,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonRefresher,
+    IonRefresherContent,
+    IonToolbar,
+    UserProfileButtonComponent,
     IonButtons,
     IonButton,
     IonIcon,
     IonSelect,
     IonSelectOption,
-    CommonModule, 
+    CommonModule,
     FormsModule
   ]
 })
 export class UsuarioObrasPage implements OnInit {
-   @ViewChild('selectObra') selectObra!: IonSelect;
+  @ViewChild('selectObra') selectObra!: IonSelect;
+
+  isLoading = true;
+  loadingObras = false;
+
   obras: any[] = [];
+  obrasFiltradas: any[] = [];
+  clientes: any[] = [];
+
   obraIdSeleccionada: number | null = null;
+  clienteIdSeleccionado: number | null = null;
 
   constructor(
     private router: Router,
@@ -62,124 +80,199 @@ export class UsuarioObrasPage implements OnInit {
     private apiService: ApiService,
     private sanitizer: DomSanitizer
   ) {
-    addIcons({chevronBackOutline,exitOutline,statsChartOutline,calendarOutline,videocamOutline,cameraOutline,triangleOutline,documentTextOutline,peopleCircleOutline,clipboardOutline,chevronDownOutline});
+    addIcons({
+      chevronBackOutline,
+      exitOutline,
+      statsChartOutline,
+      calendarOutline,
+      videocamOutline,
+      cameraOutline,
+      triangleOutline,
+      documentTextOutline,
+      peopleCircleOutline,
+      clipboardOutline,
+      chevronDownOutline
+    });
   }
 
-  
-ngOnInit(): void {
-  this.modalCtrl.getTop().then(modal => {
-    if (modal) {
-      console.log('[OBRAS] Hay un modal abierto, cerrándolo...');
-      modal.dismiss();
-    }
-  });
-
-  const userRaw = localStorage.getItem('user');
-  if (!userRaw) {
-    console.error('[OBRAS] No hay user en storage');
-    return;
+  ngOnInit(): void {
+    this.modalCtrl.getTop().then(modal => modal?.dismiss());
+    this.initFromStorageOrApi();
   }
 
-  let user: any = null;
-  try {
-    user = JSON.parse(userRaw);
-  } catch (e) {
-    console.error('[OBRAS] Error parseando user', e);
-    return;
-  }
+  private initFromStorageOrApi(): void {
+    const userRaw = localStorage.getItem('user');
 
-  const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
-  const isUserRole = roles.includes('user'); // residente
-
-  // ✅ SI ES "user": usar SOLO obras asignadas que ya vienen en /me
-  if (isUserRole) {
-    const obrasAsignadas = Array.isArray(user?.obras) ? user.obras : [];
-
-    // Normalizar IDs
-    this.obras = obrasAsignadas.map((o: any) => ({
-      ...o,
-      id: Number(o.id),
-      client_id: Number(o.client_id),
-    }));
-
-    console.log('[OBRAS] Obras asignadas (desde /me):', this.obras);
-
-    // Selección inicial (misma lógica que ya tenías)
-    if (this.obras.length > 0) {
-      const savedId = localStorage.getItem('obra_id');
-
-      if (savedId) {
-        const savedIdNum = Number(savedId);
-        const encontrada = this.obras.find(o => o.id === savedIdNum);
-        if (encontrada) this.obraIdSeleccionada = savedIdNum;
-      }
-
-      if (!this.obraIdSeleccionada) {
-        this.obraIdSeleccionada = this.obras[0].id;
-        localStorage.setItem('obra_id', String(this.obras[0].id));
-      }
-
-      console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+    if (!userRaw) {
+      this.isLoading = false;
+      return;
     }
 
-    return; // 👈 importante: no caer al endpoint por cliente
-  }
+    let user: any;
 
-  // ✅ SI NO ES "user" (admin/superadmin): aquí puedes seguir usando el endpoint por cliente si aplica
-  const clienteId = Number(user.clientId ?? user.client_id ?? null);
-  if (!clienteId) {
-    console.error('[OBRAS] No hay cliente_id válido');
-    return;
-  }
+    try {
+      user = JSON.parse(userRaw);
+    } catch (e) {
+      console.error('[OBRAS] Error parseando user', e);
+      this.isLoading = false;
+      return;
+    }
 
-  this.apiService.getObrasByCliente(clienteId).subscribe({
-    next: (res: any) => {
-      let listaFinal: any[] = [];
-      if (res?.data && Array.isArray(res.data)) {
-        listaFinal = res.data;
-      } else if (Array.isArray(res)) {
-        listaFinal = res;
-      } else {
-        listaFinal = [res];
-      }
+    const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+    const isUserRole = roles.includes('user');
 
-      this.obras = listaFinal.map((o: any) => ({
+    const isSuperAdmin =
+      roles.includes('superadmin') ||
+      roles.includes('super-admin') ||
+      roles.includes('superAdmin') ||
+      roles.includes('admin');
+
+    this.clientes = Array.isArray(user?.clientes)
+      ? user.clientes.map((c: any) => ({
+          ...c,
+          id: Number(c.id)
+        }))
+      : [];
+
+    const obrasDesdeMe = Array.isArray(user?.obras) ? user.obras : [];
+
+    if (obrasDesdeMe.length > 0) {
+      this.obras = obrasDesdeMe.map((o: any) => ({
         ...o,
         id: Number(o.id),
+        client_id: o.client_id ? Number(o.client_id) : null
       }));
 
-      console.log('[OBRAS] Obras cargadas (por cliente):', this.obras);
+      console.log('[OBRAS] Obras cargadas desde /me:', this.obras);
 
-      if (this.obras.length > 0) {
-        const savedId = localStorage.getItem('obra_id');
+      this.initSelectors(user);
+      this.isLoading = false;
+      return;
+    }
 
-        if (savedId) {
-          const savedIdNum = Number(savedId);
-          const encontrada = this.obras.find(o => o.id === savedIdNum);
-          if (encontrada) this.obraIdSeleccionada = savedIdNum;
-        }
+    if (isUserRole) {
+      console.warn('[OBRAS] Usuario con rol "user" sin obras asignadas en /me');
+      this.obras = [];
+      this.obrasFiltradas = [];
+      this.obraIdSeleccionada = null;
+      this.clienteIdSeleccionado = null;
+      localStorage.removeItem('obra_id');
+      this.isLoading = false;
+      return;
+    }
 
-        if (!this.obraIdSeleccionada) {
-          this.obraIdSeleccionada = this.obras[0].id;
-          localStorage.setItem('obra_id', String(this.obras[0].id));
-        }
+    if (!isSuperAdmin) {
+      console.warn('[OBRAS] Rol sin permiso para consultar obras por cliente');
+      this.obras = [];
+      this.obrasFiltradas = [];
+      this.obraIdSeleccionada = null;
+      this.clienteIdSeleccionado = null;
+      localStorage.removeItem('obra_id');
+      this.isLoading = false;
+      return;
+    }
 
-        console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
-      }
-    },
-    error: (err) => console.error('[OBRAS] Error:', err),
-  });
-}
-
-
-  goBack() {
-    this.router.navigate(['/usuario']);
+    // Admin / superadmin sin obras en /me:
+    // si hay clientes, cargamos obras del cliente seleccionado
+    this.initSelectors(user, false);
+    this.isLoading = false;
   }
 
-  onObraChange() {
-    console.log('[OBRAS] Cambio a:', this.obraIdSeleccionada);
+  private initSelectors(user: any, tryLoadIfNeeded: boolean = true): void {
+    const clientesCount = this.clientes.length;
+
+    if (clientesCount === 1) {
+      this.clienteIdSeleccionado = this.clientes[0].id;
+    } else if (clientesCount > 1) {
+      const clientePreferido =
+        user?.clientId ??
+        user?.client_id ??
+        user?.cliente_activo_id ??
+        this.clientes[0]?.id ??
+        null;
+
+      this.clienteIdSeleccionado = clientePreferido ? Number(clientePreferido) : null;
+    } else {
+      this.clienteIdSeleccionado = null;
+    }
+
+    if (this.obras.length > 0) {
+      this.filtrarObrasPorCliente();
+      this.restaurarOSugerirObraSeleccionada();
+      return;
+    }
+
+    if (tryLoadIfNeeded && this.clienteIdSeleccionado) {
+      this.cargarObrasPorCliente(this.clienteIdSeleccionado);
+    }
+  }
+
+  private filtrarObrasPorCliente(): void {
+    if (!this.clienteIdSeleccionado) {
+      this.obrasFiltradas = [...this.obras];
+      return;
+    }
+
+    this.obrasFiltradas = (this.obras || []).filter(
+      (obra) => Number(obra.client_id) === Number(this.clienteIdSeleccionado)
+    );
+
+    console.log('[OBRAS] Obras filtradas:', this.obrasFiltradas);
+  }
+
+  private restaurarOSugerirObraSeleccionada(): void {
+    const savedId = localStorage.getItem('obra_id');
+    let obraValida: any = null;
+
+    if (savedId) {
+      const savedIdNum = Number(savedId);
+      obraValida = this.obrasFiltradas.find(o => o.id === savedIdNum) ?? null;
+    }
+
+    if (obraValida) {
+      this.obraIdSeleccionada = obraValida.id;
+    } else if (this.obrasFiltradas.length > 0) {
+      this.obraIdSeleccionada = this.obrasFiltradas[0].id;
+      localStorage.setItem('obra_id', String(this.obraIdSeleccionada));
+    } else {
+      this.obraIdSeleccionada = null;
+      localStorage.removeItem('obra_id');
+    }
+
+    console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
+  }
+
+  onClienteChange(): void {
+    console.log('[OBRAS] Cliente cambiado a:', this.clienteIdSeleccionado);
+
+    if (!this.clienteIdSeleccionado) {
+      this.obrasFiltradas = [];
+      this.obraIdSeleccionada = null;
+      localStorage.removeItem('obra_id');
+      return;
+    }
+
+    // Si ya tenemos obras en memoria, filtramos localmente
+    const existenObrasConClientId =
+      this.obras.length > 0 && this.obras.some(o => o.client_id !== null && o.client_id !== undefined);
+
+    if (existenObrasConClientId) {
+      this.filtrarObrasPorCliente();
+      this.restaurarOSugerirObraSeleccionada();
+      return;
+    }
+
+    // Si no hay obras o vienen desde endpoint por cliente, recargamos
+    this.cargarObrasPorCliente(this.clienteIdSeleccionado);
+  }
+
+  onObraChange(): void {
+    console.log('[OBRAS] Cambio a obra:', this.obraIdSeleccionada);
+
     if (this.obraIdSeleccionada) {
       localStorage.setItem('obra_id', String(this.obraIdSeleccionada));
+    } else {
+      localStorage.removeItem('obra_id');
     }
   }
 
@@ -187,42 +280,50 @@ ngOnInit(): void {
     return item.id;
   }
 
-async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'informes' | 'directorio') {
-  // 1) Asegurar obraId SIEMPRE
-  let obraId = this.obraIdSeleccionada;
-
-  // Si por cualquier razón está null, toma la primera obra cargada
-  if (!obraId && this.obras.length > 0) {
-    obraId = Number(this.obras[0].id);
-    this.obraIdSeleccionada = obraId;
-    localStorage.setItem('obra_id', String(obraId));
-    console.log('[OBRAS] obraId autoseleccionada para abrir sección:', obraId);
+  trackByCliente(index: number, item: any) {
+    return item.id;
   }
 
-  if (!obraId) {
-    console.warn('[OBRAS] No hay obra seleccionada y no hay obras cargadas.');
-    return;
+  goBack() {
+    this.router.navigate(['/usuario']);
   }
 
-const modal = await this.modalCtrl.create({
-  component: ObraSectionModalComponent,
-  cssClass: 'obra-fullscreen-modal',
-  breakpoints: [1],
-  initialBreakpoint: 1,
-  handle: false,
-  componentProps: {
-    obraId,
-    section
+  async openSection(section: 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'informes' | 'directorio') {
+    let obraId = this.obraIdSeleccionada;
+
+    if (!obraId && this.obrasFiltradas.length > 0) {
+      obraId = Number(this.obrasFiltradas[0].id);
+      this.obraIdSeleccionada = obraId;
+      localStorage.setItem('obra_id', String(obraId));
+      console.log('[OBRAS] obraId autoseleccionada para abrir sección:', obraId);
+    }
+
+    if (!obraId) {
+      console.warn('[OBRAS] No hay obra seleccionada y no hay obras cargadas.');
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: ObraSectionModalComponent,
+      cssClass: 'obra-fullscreen-modal',
+      breakpoints: [1],
+      initialBreakpoint: 1,
+      handle: false,
+      componentProps: {
+        obraId,
+        section
+      }
+    });
+
+    await modal.present();
   }
-});
 
-  await modal.present();
-}
-
-   getObraNombre(): string {
+  getObraNombre(): string {
     if (!this.obraIdSeleccionada) return 'Selecciona una obra';
-    
-    const obra = this.obras.find(o => o.id === this.obraIdSeleccionada);
+
+    const obra = this.obrasFiltradas.find(o => o.id === this.obraIdSeleccionada)
+      ?? this.obras.find(o => o.id === this.obraIdSeleccionada);
+
     return obra?.name || obra?.nombre || `Obra #${this.obraIdSeleccionada}`;
   }
 
@@ -232,155 +333,167 @@ const modal = await this.modalCtrl.create({
       await this.selectObra.open();
     }
   }
-  
-private getClienteId(): number | null {
-  const userRaw = localStorage.getItem('user');
-  if (!userRaw) {
-    console.error('[OBRAS] No hay user en storage');
-    return null;
-  }
 
-  try {
-    const user = JSON.parse(userRaw);
-    const clienteId = Number(user.clientId ?? user.client_id ?? null);
-    return clienteId || null;
-  } catch (e) {
-    console.error('[OBRAS] Error parseando user', e);
-    return null;
-  }
-}
-
-private cargarObras(onFinish?: () => void) {
-  const clienteId = this.getClienteId();
-
-  if (!clienteId) {
-    console.error('[OBRAS] No hay cliente_id válido');
-    onFinish?.();
-    return;
-  }
-
-  this.apiService.getObrasByCliente(clienteId).subscribe({
-    next: (res: any) => {
-      let listaFinal: any[] = [];
-      if (res?.data && Array.isArray(res.data)) {
-        listaFinal = res.data;
-      } else if (Array.isArray(res)) {
-        listaFinal = res;
-      } else {
-        listaFinal = [res];
-      }
-
-      this.obras = listaFinal.map((o: any) => ({
-        ...o,
-        id: Number(o.id)
-      }));
-
-      console.log('[OBRAS] Obras cargadas:', this.obras);
-
-      if (this.obras.length > 0) {
-        const savedId = localStorage.getItem('obra_id');
-
-        if (savedId) {
-          const savedIdNum = Number(savedId);
-          const encontrada = this.obras.find(o => o.id === savedIdNum);
-          if (encontrada) {
-            this.obraIdSeleccionada = savedIdNum;
-          }
-        }
-
-        if (!this.obraIdSeleccionada) {
-          this.obraIdSeleccionada = this.obras[0].id;
-          localStorage.setItem('obra_id', String(this.obras[0].id));
-        }
-
-        console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
-      }
-
-      onFinish?.();
-    },
-    error: (err) => {
-      console.error('[OBRAS] Error:', err);
-      onFinish?.();
+  private getClienteId(): number | null {
+    if (this.clienteIdSeleccionado) {
+      return Number(this.clienteIdSeleccionado);
     }
-  });
-}
-private refrescarMe(onFinish?: () => void) {
-  this.apiService.me().subscribe({
-    next: (me: any) => {
-      // Actualiza user en storage manteniendo compatibilidad
-      localStorage.setItem('user', JSON.stringify(me));
 
-      // Si es rol user: tomar obras asignadas desde /me
-      const roles: string[] = Array.isArray(me?.roles) ? me.roles : [];
-      const isUserRole = roles.includes('user');
-
-      if (isUserRole) {
-        const obrasAsignadas = Array.isArray(me?.obras) ? me.obras : [];
-
-        this.obras = obrasAsignadas.map((o: any) => ({
-          ...o,
-          id: Number(o.id),
-          client_id: Number(o.client_id),
-        }));
-
-        // Mantener selección
-        if (this.obras.length > 0) {
-          const savedId = localStorage.getItem('obra_id');
-
-          if (savedId) {
-            const savedIdNum = Number(savedId);
-            const encontrada = this.obras.find(o => o.id === savedIdNum);
-            if (encontrada) this.obraIdSeleccionada = savedIdNum;
-          }
-
-          if (!this.obraIdSeleccionada) {
-            this.obraIdSeleccionada = this.obras[0].id;
-            localStorage.setItem('obra_id', String(this.obras[0].id));
-          }
-        } else {
-          // Si ya no tiene obras asignadas, limpiar selección
-          this.obraIdSeleccionada = null;
-          localStorage.removeItem('obra_id');
-        }
-
-        console.log('[OBRAS] Refrescado desde /me:', this.obras);
-        onFinish?.();
-        return;
-      }
-
-      // Si NO es user, dejamos que el refresher use el endpoint por cliente
-      onFinish?.();
-    },
-    error: (err) => {
-      console.error('[OBRAS] Error refrescando /me', err);
-      onFinish?.();
-    },
-  });
-}
-doRefresh(event: any) {
-  // Siempre refrescamos /me primero para tener data fresca en storage
-  this.refrescarMe(() => {
-    // Luego, si no es rol user, refrescamos por cliente
     const userRaw = localStorage.getItem('user');
-    let user: any = null;
+    if (!userRaw) {
+      console.error('[OBRAS] No hay user en storage');
+      return null;
+    }
 
     try {
-      user = userRaw ? JSON.parse(userRaw) : null;
-    } catch {
-      user = null;
+      const user = JSON.parse(userRaw);
+      const clienteId = Number(
+        user.clientId ??
+        user.client_id ??
+        user.cliente_activo_id ??
+        null
+      );
+      return clienteId || null;
+    } catch (e) {
+      console.error('[OBRAS] Error parseando user', e);
+      return null;
     }
+  }
 
-    const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
-    const isUserRole = roles.includes('user');
-
-    if (isUserRole) {
-      event?.target?.complete();
+  private cargarObrasPorCliente(clienteId: number, onFinish?: () => void) {
+    if (!clienteId) {
+      console.error('[OBRAS] No hay cliente_id válido');
+      this.obras = [];
+      this.obrasFiltradas = [];
+      this.obraIdSeleccionada = null;
+      onFinish?.();
       return;
     }
 
-    // admin/superadmin: refrescar listado por cliente
-    this.cargarObras(() => event?.target?.complete());
-  });
-}
+    this.loadingObras = true;
 
+    this.apiService.getObrasByCliente(clienteId).subscribe({
+      next: (res: any) => {
+        let listaFinal: any[] = [];
+
+        if (res?.data && Array.isArray(res.data)) {
+          listaFinal = res.data;
+        } else if (Array.isArray(res)) {
+          listaFinal = res;
+        } else if (res) {
+          listaFinal = [res];
+        }
+
+        this.obras = listaFinal.map((o: any) => ({
+          ...o,
+          id: Number(o.id),
+          client_id: o.client_id ? Number(o.client_id) : Number(clienteId)
+        }));
+
+        this.clienteIdSeleccionado = Number(clienteId);
+
+        console.log('[OBRAS] Obras cargadas por cliente:', this.obras);
+
+        this.filtrarObrasPorCliente();
+        this.restaurarOSugerirObraSeleccionada();
+
+        this.loadingObras = false;
+        onFinish?.();
+      },
+      error: (err) => {
+        console.error('[OBRAS] Error cargando obras por cliente:', err);
+        this.obras = [];
+        this.obrasFiltradas = [];
+        this.obraIdSeleccionada = null;
+        this.loadingObras = false;
+        onFinish?.();
+      }
+    });
+  }
+
+  private cargarObras(onFinish?: () => void) {
+    const clienteId = this.getClienteId();
+
+    if (!clienteId) {
+      console.error('[OBRAS] No hay cliente_id válido');
+      onFinish?.();
+      return;
+    }
+
+    this.cargarObrasPorCliente(clienteId, onFinish);
+  }
+
+  private refrescarMe(onFinish?: () => void) {
+    this.apiService.me().subscribe({
+      next: (me: any) => {
+        localStorage.setItem('user', JSON.stringify(me));
+
+        const roles: string[] = Array.isArray(me?.roles) ? me.roles : [];
+        const isUserRole = roles.includes('user');
+
+        this.clientes = Array.isArray(me?.clientes)
+          ? me.clientes.map((c: any) => ({
+              ...c,
+              id: Number(c.id)
+            }))
+          : [];
+
+        if (isUserRole) {
+          const obrasAsignadas = Array.isArray(me?.obras) ? me.obras : [];
+
+          this.obras = obrasAsignadas.map((o: any) => ({
+            ...o,
+            id: Number(o.id),
+            client_id: o.client_id ? Number(o.client_id) : null
+          }));
+
+          this.initSelectors(me, false);
+
+          console.log('[OBRAS] Refrescado desde /me:', this.obras);
+          onFinish?.();
+          return;
+        }
+
+        // admin/superadmin
+        this.initSelectors(me, false);
+        onFinish?.();
+      },
+      error: (err) => {
+        console.error('[OBRAS] Error refrescando /me', err);
+        onFinish?.();
+      }
+    });
+  }
+  
+
+  doRefresh(event: any) {
+    this.refrescarMe(() => {
+      const userRaw = localStorage.getItem('user');
+      let user: any = null;
+
+      try {
+        user = userRaw ? JSON.parse(userRaw) : null;
+      } catch {
+        user = null;
+      }
+
+      const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
+      const isUserRole = roles.includes('user');
+
+      if (isUserRole) {
+        event?.target?.complete();
+        return;
+      }
+
+      const clienteId = this.getClienteId();
+
+      if (!clienteId) {
+        event?.target?.complete();
+        return;
+      }
+
+      this.cargarObrasPorCliente(clienteId, () => event?.target?.complete());
+    });
+  }
+  
 }

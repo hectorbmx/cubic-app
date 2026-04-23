@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Browser } from '@capacitor/browser';
 import {
   IonContent,
   IonHeader,IonIcon,
@@ -12,6 +13,8 @@ import {
   IonList,
   IonItem,
   IonLabel,
+    IonModal,
+
   ModalController
 } from '@ionic/angular/standalone';
 
@@ -22,12 +25,20 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
 @Component({
   selector: 'app-obra-section-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,IonIcon,
-    IonContent,
-    IonList, IonItem, IonLabel
-  ],
+imports: [
+  CommonModule,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonModal
+],
   template: `
   <ion-header class="custom-header">
     <ion-toolbar class="custom-toolbar">
@@ -118,8 +129,8 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
 
         <ng-template #noPersonas>
           <div class="info-item">
-            <div class="label">Personas</div>
-            <div class="value">No hay personas registradas</div>
+            <div class="label">People</div>
+            <div class="value">No registered users</div>
           </div>
         </ng-template>
       </div>
@@ -128,54 +139,49 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 </ng-container>
 
-
-    
 <!-- TIMELINE -->
 <ng-container *ngIf="section === 'timeline'">
   <div class="timeline-wrap" *ngIf="(obra?.detalles?.length ?? 0) > 0; else noTimeline">
 
-    <!-- <div class="timeline-title">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <span>time line</span>
-    </div> -->
-
     <div class="timeline-list">
       <div class="tl-row" *ngFor="let d of obra.detalles; let last = last">
-        <!-- rail (línea vertical por item) -->
         <div class="tl-rail" [class.tl-rail-last]="last"></div>
 
-        <!-- contenido -->
         <div class="tl-body">
-          <div class="tl-h-title">
-            <span class="tl-h-main">{{ d.titulo ?? 'Evento' }}</span>
+          <div class="tl-main-row">
+            <div class="tl-h-main">{{ d.titulo ?? 'Evento' }}</div>
+            <div class="tl-progress-badge" *ngIf="d.progress_pct != null || d.progress != null">
+              {{ d.progress_pct ?? d.progress }}%
+            </div>
           </div>
 
-          <div class="tl-date">{{ formatDate(d.fecha) }}</div>
+          <div class="tl-type" *ngIf="d.type">
+            {{ d.type }}
+          </div>
+
+          <div class="tl-date">
+            {{ formatDateOnly(d.fecha) }}
+          </div>
 
           <div class="tl-desc" *ngIf="d.descripcion">
             {{ d.descripcion }}
           </div>
-
-          <!--  <div class="tl-progress" *ngIf="d.progress != null"> -->
-          <!--   {{ d.progress }}% -->
-          <!-- </div> -->
         </div>
       </div>
     </div>
 
-    <!-- PROGRESS BAR FINAL (usa el último progress) -->
-    <div class="progress-footer" *ngIf="lastProgress != null">
-      <div class="progress-number">{{ lastProgress }}%</div>
+   <div class="progress-footer" *ngIf="obra?.progreso !== null && obra?.progreso !== undefined">
+  <div class="progress-number">{{ obra.progreso ?? 0 }}%</div>
 
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="lastProgress"></div>
-      </div>
-    </div>
+  <div class="progress-bar">
+    <div class="progress-fill" [style.width.%]="obra.progreso ?? 0"></div>
+  </div>
+</div>
 
   </div>
 
   <ng-template #noTimeline>
-    <div class="empty-state">Sin eventos registrados.</div>
+    <div class="empty-state">No events registered.</div>
   </ng-template>
 </ng-container>
 
@@ -185,24 +191,71 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   <div class="camaras-grid" *ngIf="(obra?.camaras?.length ?? 0) > 0; else noCamaras">
 
     <div class="camara-card" *ngFor="let cam of obra.camaras">
-     <div class="camara-preview">
-  <iframe 
-    [src]="getSafeUrl(cam.url)" 
-    width="100%" 
-    height="200" 
-    frameborder="0" 
-    allowfullscreen>
-  </iframe>
-</div>
+
+      <!-- PREVIEW FOTO -->
+      <div
+        class="camara-preview camara-photo-preview"
+        *ngIf="cam.has_photo && (cam.photo_url || cam.photo_path)"
+        (click)="openPhotoPreview(cam)"
+      >
+        <img
+            [src]="fileUrl(cam.photo_url || cam.photo_path)"
+            [alt]="cam.nombre ?? 'Foto de cámara'"
+            loading="lazy"
+          />
+      </div>
+
+      <!-- PREVIEW LIVE -->
+      <div
+        class="camara-preview live-preview"
+        *ngIf="cam.has_live && cam.url"
+        (click)="openLiveCamera(cam)"
+      >
+        <div class="live-placeholder">
+          <ion-icon name="videocam-outline"></ion-icon>
+          <span>Ver cámara en vivo</span>
+        </div>
+      </div>
 
       <div class="camara-info">
         <div class="camara-name">{{ cam.nombre ?? 'Cámara' }}</div>
+
         <div class="camara-location">
-          {{ cam.ubicacion ?? 'Ubicación no definida' }}
+          {{ cam.ubicacion ?? 'Location not defined' }}
+        </div>
+
+        <div class="camara-meta" *ngIf="cam.photo_taken_at">
+          Foto: {{ cam.photo_taken_at | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+
+        <div class="camara-meta" *ngIf="cam.photo_notes">
+          {{ cam.photo_notes }}
         </div>
 
         <div class="camara-status" [class.on]="cam.activa">
           {{ cam.activa ? 'Activa' : 'Inactiva' }}
+        </div>
+
+        <div class="camara-actions">
+          <ion-button
+            size="small"
+            fill="solid"
+            *ngIf="cam.has_live"
+            (click)="openLiveCamera(cam)"
+          >
+            <ion-icon name="videocam-outline" slot="start"></ion-icon>
+            Live
+          </ion-button>
+
+          <ion-button
+            size="small"
+            fill="outline"
+            *ngIf="cam.has_photo"
+            (click)="openPhotoPreview(cam)"
+          >
+            <ion-icon name="image-outline" slot="start"></ion-icon>
+            Foto
+          </ion-button>
         </div>
       </div>
     </div>
@@ -211,11 +264,45 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
 
   <ng-template #noCamaras>
     <div class="empty-state">
-      No hay cámaras registradas para esta obra.
+      No registered cameras.
+      No cameras are registered for this project.
     </div>
   </ng-template>
 
 </ng-container>
+
+<!-- MODAL FOTO -->
+<ion-modal [isOpen]="isPhotoModalOpen" (didDismiss)="closePhotoPreview()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ selectedCameraTitle || 'Foto' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closePhotoPreview()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding photo-modal-content">
+      <img
+        *ngIf="selectedPhotoUrl"
+        [src]="selectedPhotoUrl"
+        [alt]="selectedCameraTitle || 'Foto'"
+        class="full-photo"
+      />
+
+      <div class="photo-extra" *ngIf="selectedPhotoTakenAt || selectedPhotoNotes">
+        <div *ngIf="selectedPhotoTakenAt">
+          <strong>Fecha:</strong> {{ selectedPhotoTakenAt | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+
+        <div *ngIf="selectedPhotoNotes">
+          <strong>Notas:</strong> {{ selectedPhotoNotes }}
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 <!-- FOTOS -->
 <ng-container *ngIf="section === 'fotos'">
 
@@ -231,7 +318,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noFotos>
-    <div class="empty-state">No hay fotos registradas para esta obra.</div>
+    <div class="empty-state">There are no photos registered for this site.</div>
   </ng-template>
 
   <!-- Preview -->
@@ -244,7 +331,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
         <div class="photo-date">{{ photoOpen.fecha ?? '—' }}</div>
       </div>
 
-      <button class="photo-close" type="button" (click)="closePhoto()">Cerrar</button>
+      <button class="photo-close" type="button" (click)="closePhoto()">Close</button>
     </div>
   </div>
 </ng-container>
@@ -278,7 +365,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noPlanos>
-    <div class="empty-state">No hay planos registrados para esta obra.</div>
+    <div class="empty-state">No drawings are registered for this project.</div>
   </ng-template>
 
 </ng-container>
@@ -326,7 +413,7 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   </div>
 
   <ng-template #noInformes>
-    <div class="empty-state">No hay informes registrados para esta obra.</div>
+    <div class="empty-state">No reports are registered for this project.</div>
   </ng-template>
 
 </ng-container>
@@ -776,91 +863,67 @@ type ObraSection = 'info' | 'timeline' | 'camaras' | 'fotos' | 'planos' | 'infor
   }
 }
 
-.timeline-list {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  padding: 12px 10px;
-}
-
 .tl-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 10px;
-  padding: 10px 6px;
-
-  & + .tl-row {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-}
-
-/* La línea vertical del ancho del item (rail) */
-.tl-rail {
-  position: relative;
-  width: 26px;
-}
-
-/* Línea vertical centrada */
-.tl-rail::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 2px;
-  bottom: 2px;
-  width: 3px;
-  transform: translateX(-50%);
-  background: #f5c400; /* amarillo */
-  border-radius: 6px;
-  opacity: 0.95;
-}
-
-/* “Remate” del último item para que la línea no siga bajando */
-.tl-rail-last::before {
-  bottom: 50%;
-}
-
-/* Opcional: un “corte” abajo (si quieres que termine más arriba) */
-/*
-.tl-rail-last::before {
-  bottom: 14px;
-}
-*/
-
-.tl-body {
-  color: #fff;
-}
-
-.tl-h-title {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  gap: 16px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* El riel (línea amarilla lateral) */
+.tl-rail {
+  width: 4px;
+  background: #ffc400; /* Color amarillo del diseño */
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-bottom: -20px; /* Para que conecte visualmente con el siguiente */
+}
+
+.tl-rail-last {
+  height: 30px; /* El último riel no se extiende */
+  margin-bottom: 0;
+}
+
+/* Cuerpo del contenido */
+.tl-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ESTA ES LA CLAVE: Distribuye Título y Porcentaje */
+.tl-main-row {
+  display: flex;
+  justify-content: space-between; 
+  align-items: flex-start;
 }
 
 .tl-h-main {
-  font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
   text-transform: uppercase;
 }
 
-.tl-date {
+.tl-progress-badge {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff; /* O el color que prefieras para el % */
+}
+
+/* Estilo para el tipo y la fecha abajo */
+.tl-type {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 2px;
-  font-size: 12px;
-  opacity: 0.75;
 }
 
-.tl-desc {
-  margin-top: 8px;
+.tl-date {
   font-size: 13px;
-  opacity: 0.9;
-  line-height: 1.25rem;
-
-  /* si quieres que la descripción sea “breve” como en tu comentario */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: rgba(255, 255, 255, 0.5); /* Color grisáceo para la fecha */
+  margin-top: 2px;
 }
-
 .tl-progress {
   margin-top: 8px;
   font-size: 14px;
@@ -1192,7 +1255,42 @@ photoOpen: any = null;
 openPhoto(f: any) {
   this.photoOpen = f;
 }
+isPhotoModalOpen = false;
+selectedPhotoUrl: string | null = null;
+selectedCameraTitle: string | null = null;
+selectedPhotoTakenAt: string | null = null;
+selectedPhotoNotes: string | null = null;
 
+openPhotoPreview(cam: any): void {
+  const photo = cam?.photo_url || cam?.photo_path || null;
+  if (!photo) return;
+
+  this.selectedPhotoUrl = this.fileUrl(photo);
+  this.selectedCameraTitle = cam.nombre || 'Foto';
+  this.selectedPhotoTakenAt = cam.photo_taken_at || null;
+  this.selectedPhotoNotes = cam.photo_notes || null;
+  this.isPhotoModalOpen = true;
+}
+
+closePhotoPreview(): void {
+  this.isPhotoModalOpen = false;
+  this.selectedPhotoUrl = null;
+  this.selectedCameraTitle = null;
+  this.selectedPhotoTakenAt = null;
+  this.selectedPhotoNotes = null;
+}
+
+async openLiveCamera(cam: any): Promise<void> {
+  if (!cam?.url) return;
+
+  try {
+    await Browser.open({
+      url: cam.url
+    });
+  } catch (error) {
+    console.error('Error abriendo cámara en vivo:', error);
+  }
+}
 closePhoto() {
   this.photoOpen = null;
 }
@@ -1224,7 +1322,17 @@ fileUrl(path: string) {
   return `${base}/storage/${clean}`;
 }
 
+formatDateOnly(dateString: string): string {
+  if (!dateString) return '';
 
+  const date = new Date(dateString.replace(' ', 'T'));
+
+  return date.toLocaleDateString('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
 
 private getApiBaseUrl(): string {
   // Quitamos /api/v1 del final
