@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { AuthService } from 'src/app/core/services/auth.service'; // Ajusta la ruta
+import { effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from 'src/app/core/services/api';
 import { ObraSectionModalComponent } from './obra-section-modal.component';
@@ -75,11 +76,20 @@ export class UsuarioObrasPage implements OnInit {
   clienteIdSeleccionado: number | null = null;
 
   constructor(
+    private authService: AuthService, // <--- Inyectar
     private router: Router,
     private modalCtrl: ModalController,
     private apiService: ApiService,
     private sanitizer: DomSanitizer
-  ) {
+  )
+  
+  {
+    effect(() => {
+      const user = this.authService.user();
+      if (user) {
+        this.syncDataWithAuth(user);
+      }
+    });
     addIcons({
       chevronBackOutline,
       exitOutline,
@@ -97,9 +107,21 @@ export class UsuarioObrasPage implements OnInit {
 
   ngOnInit(): void {
     this.modalCtrl.getTop().then(modal => modal?.dismiss());
-    this.initFromStorageOrApi();
+    // this.modalCtrl.getTop().then(modal => modal?.dismiss());
+    // this.initFromStorageOrApi();
   }
-
+// Nueva función para sincronizar el estado del componente con el Signal
+  private syncDataWithAuth(user: any) {
+    this.clientes = user.clientes || [];
+    this.obras = user.obras || [];
+    
+    // Mantener el cliente seleccionado o tomar el activo del user
+    this.clienteIdSeleccionado = Number(user.client_id);
+    
+    this.filtrarObrasPorCliente();
+    this.restaurarOSugerirObraSeleccionada();
+    this.isLoading = false;
+  }
   private initFromStorageOrApi(): void {
     const userRaw = localStorage.getItem('user');
 
@@ -241,30 +263,20 @@ export class UsuarioObrasPage implements OnInit {
 
     console.log('[OBRAS] Obra seleccionada:', this.obraIdSeleccionada);
   }
-
-  onClienteChange(): void {
-    console.log('[OBRAS] Cliente cambiado a:', this.clienteIdSeleccionado);
-
-    if (!this.clienteIdSeleccionado) {
-      this.obrasFiltradas = [];
-      this.obraIdSeleccionada = null;
-      localStorage.removeItem('obra_id');
-      return;
-    }
-
-    // Si ya tenemos obras en memoria, filtramos localmente
-    const existenObrasConClientId =
-      this.obras.length > 0 && this.obras.some(o => o.client_id !== null && o.client_id !== undefined);
-
-    if (existenObrasConClientId) {
-      this.filtrarObrasPorCliente();
-      this.restaurarOSugerirObraSeleccionada();
-      return;
-    }
-
-    // Si no hay obras o vienen desde endpoint por cliente, recargamos
-    this.cargarObrasPorCliente(this.clienteIdSeleccionado);
+onClienteChange(): void {
+  const user = this.authService.user();
+  if (user && this.clienteIdSeleccionado) {
+    // Actualizamos el Signal global
+    this.authService.user.set({
+      ...user,
+      client_id: Number(this.clienteIdSeleccionado),
+      clientId: Number(this.clienteIdSeleccionado)
+    });
+    
+    // El 'effect' del constructor detectará esto y ejecutará filtrarObrasPorCliente()
   }
+}
+
 
   onObraChange(): void {
     console.log('[OBRAS] Cambio a obra:', this.obraIdSeleccionada);
