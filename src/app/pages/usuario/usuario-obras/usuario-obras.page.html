@@ -104,10 +104,18 @@
     <p>Timeline</p>
   </div>
 
-  <div class="option-card" (click)="openSection('camaras')">
+  <!-- <div class="option-card" (click)="openSection('camaras')">
     <ion-icon name="videocam-outline"></ion-icon>
     <p>Works<br>Cameras</p>
-  </div>
+  </div> -->
+<div 
+  class="option-card" 
+  [class.option-card--disabled]="tieneCamaras === false"
+  (click)="openCamaras()"
+>
+  <ion-icon name="videocam-outline"></ion-icon>
+  <p>Works<br>Cameras</p>
+</div>
   
   <div class="option-card option-card--renders" (click)="openSection('fotos')">
     <!-- <ion-icon name="camera-outline"></ion-icon> -->

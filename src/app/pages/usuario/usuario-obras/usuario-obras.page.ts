@@ -12,6 +12,8 @@ import { Capacitor } from '@capacitor/core';
 import { UserProfileButtonComponent } from 'src/app/components/user-menu/user-profile-button/user-profile-button.component';
 import { firstValueFrom } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ToastController } from '@ionic/angular';
+
 import {
   IonContent,
   IonHeader,
@@ -71,7 +73,7 @@ export class UsuarioObrasPage implements OnInit {
   obras: any[] = [];
   obrasFiltradas: any[] = [];
   clientes: any[] = [];
-
+  tieneCamaras: boolean | null = null;
   obraIdSeleccionada: number | null = null;
   clienteIdSeleccionado: number | null = null;
 
@@ -80,7 +82,9 @@ export class UsuarioObrasPage implements OnInit {
     private router: Router,
     private modalCtrl: ModalController,
     private apiService: ApiService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+      private toastCtrl: ToastController,
+
   )
   
   {
@@ -109,6 +113,8 @@ export class UsuarioObrasPage implements OnInit {
     this.modalCtrl.getTop().then(modal => modal?.dismiss());
     // this.modalCtrl.getTop().then(modal => modal?.dismiss());
     // this.initFromStorageOrApi();
+      this.checkCamaras();
+
   }
 // Nueva función para sincronizar el estado del componente con el Signal
   private syncDataWithAuth(user: any) {
@@ -199,7 +205,21 @@ export class UsuarioObrasPage implements OnInit {
     this.initSelectors(user, false);
     this.isLoading = false;
   }
+checkCamaras() {
+  const obraId = this.obraIdSeleccionada;
+  if (!obraId) return;
 
+  this.apiService.getObra(obraId).subscribe({
+    next: (res: any) => {
+      const obra = res?.obra ?? res?.data ?? res?.data?.obra ?? res?.obras ?? res;
+      const camaras: any[] = obra?.camaras ?? [];
+      const cam = camaras.find((c: any) => c.has_live && c.url)
+               ?? camaras.find((c: any) => c.has_photo && (c.photo_url || c.photo_path));
+      this.tieneCamaras = !!cam;
+    },
+    error: () => { this.tieneCamaras = false; }
+  });
+}
   private initSelectors(user: any, tryLoadIfNeeded: boolean = true): void {
     const clientesCount = this.clientes.length;
 
@@ -507,5 +527,66 @@ onClienteChange(): void {
       this.cargarObrasPorCliente(clienteId, () => event?.target?.complete());
     });
   }
-  
+  async openCamaras() {
+  let obraId = this.obraIdSeleccionada;
+
+  if (!obraId && this.obrasFiltradas.length > 0) {
+    obraId = Number(this.obrasFiltradas[0].id);
+    this.obraIdSeleccionada = obraId;
+    localStorage.setItem('obra_id', String(obraId));
+  }
+
+  if (!obraId) return;
+
+  // Carga la obra con detalle (igual que el modal)
+  this.apiService.getObra(obraId).subscribe({
+    next: async (res: any) => {
+      const obra = res?.obra ?? res?.data ?? res?.data?.obra ?? res?.obras ?? res;
+      const camaras: any[] = obra?.camaras ?? [];
+
+      if (camaras.length === 0) {
+        const toast = await this.toastCtrl.create({
+          message: 'No cameras are registered for this project..',
+          duration: 2000,
+          position: 'bottom',
+          color: 'warning',        // ← amarillo
+          icon: 'warning-outline' 
+        });
+        await toast.present();
+        return;
+      }
+
+      const cam = camaras.find((c: any) => c.has_live && c.url)
+                ?? camaras.find((c: any) => c.has_photo && (c.photo_url || c.photo_path));
+
+      if (!cam) {
+        const toast = await this.toastCtrl.create({
+          message: 'No hay contenido disponible en las cámaras.',
+          duration: 2000,
+          position: 'bottom'
+        });
+        await toast.present();
+        return;
+      }
+
+      if (cam.has_live && cam.url) {
+        await Browser.open({ url: cam.url });
+        return;
+      }
+
+      if (cam.has_photo) {
+        const url = cam.photo_url || cam.photo_path;
+        await Browser.open({ url });
+      }
+    },
+    error: async () => {
+      const toast = await this.toastCtrl.create({
+        message: 'Error al cargar las cámaras.',
+        duration: 2000,
+        position: 'bottom'
+      });
+      await toast.present();
+    }
+  });
+}
 }

@@ -173,7 +173,7 @@ imports: [
 
   <!-- TÍTULO -->
   <div class="progress-title">
-    Progreso de la obra
+    General Progress
   </div>
 
   <!-- PORCENTAJE -->
@@ -241,7 +241,7 @@ imports: [
         </div>
 
         <div class="camara-status" [class.on]="cam.activa">
-          {{ cam.activa ? 'Activa' : 'Inactiva' }}
+          {{ cam.activa ? 'Active' : 'Inactiva' }}
         </div>
 
         <div class="camara-actions">
@@ -635,6 +635,16 @@ imports: [
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.75);
+}
+  .progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c4c400; // gris claro elegante (no blanco puro)
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
   
 /* =========================
